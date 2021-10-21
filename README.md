@@ -16,4 +16,12 @@
 
 ## Table of contents
 
-- TOC
+- [What is it?](#what-is-it)
+
+----------
+
+## What is it?
+
+PiPo-Ballus is a smart table that can stabilize and balance a ball (for example, a ping-pong ball). The first version (removed from GitHub) used only 2 servos. The current version uses 3 servos and a conversion of the Cartesian coordinate system (like on a delta 3D printer).
+
+![Gif](./GIT_IMAGES/git_catch.gif "Gif")
