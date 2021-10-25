@@ -8,3 +8,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = "PiPo-Ballus"
 include ':app'
+include ':opencv'
+project(':opencv').projectDir = new File(opencvsdk + '/sdk')
