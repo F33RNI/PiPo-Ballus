@@ -34,10 +34,13 @@ import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -120,9 +123,29 @@ public class MainActivity extends AppCompatActivity {
         // Open layout
         setContentView(R.layout.activity_main);
 
+        // Remove action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+
+        // Initialize BottomNavigationView variable
+        BottomNavigationView bottomNavigationView = findViewById(R.id.navigationView);
+
+        // Select home item
+        bottomNavigationView.setSelectedItemId(R.id.menuCamera);
+
+        // Add bottom menu clicks
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            if (item.getItemId() == R.id.menuHome) {
+                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                finish();
+            }
+            else if (item.getItemId() == R.id.menuSettings) {
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                finish();
+            }
+            return false;
+        });
 
         // Initialize OpenCVHandler class
         openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
@@ -139,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
 
-        ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, -7057738);
+        /*ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, -7057738);
 
 
         colorPickerDialog.setColorPickerListener(new ColorPickerListener() {
@@ -154,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        colorPickerDialog.show();
+        colorPickerDialog.show();*/
     }
 
     @Override
