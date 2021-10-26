@@ -38,6 +38,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
+    implementation 'com.github.madrapps:pikolo:2.0.2'
+
     implementation project(path: ':opencv')
 
     implementation 'org.jcodec:jcodec:0.2.5'

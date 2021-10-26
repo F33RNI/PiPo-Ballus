@@ -63,6 +63,9 @@ public class SettingsHandler {
      * Reads settings from JSON file
      */
     public void readSettings() {
+        // Log settings file location
+        Log.i(TAG, "Reading settings from " + settingsFile.getAbsolutePath());
+
         if (!settingsFile.exists())
             saveSettings(settingsFile, activity);
         try {

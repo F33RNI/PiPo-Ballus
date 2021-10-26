@@ -37,19 +37,11 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
 import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 
@@ -57,9 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
     private final String[] PERMISSIONS = {
-            Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.CAMERA
     };
     private final int PERMISSION_REQUEST_CODE = 1;
 
@@ -67,8 +57,6 @@ public class MainActivity extends AppCompatActivity {
     private static SettingsContainer settingsContainer;
 
     private OpenCVHandler openCVHandler;
-
-    private boolean paused = false;
 
 
 
@@ -125,12 +113,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get settings file
+        // Load settings file
         settingsFile = new File(getBaseContext().getExternalFilesDir( null),
                 "settings.json");
 
         // Open layout
         setContentView(R.layout.activity_main);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         // Initialize OpenCVHandler class
         openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
@@ -146,6 +138,23 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "OpenCV library found inside package. Using it!");
             baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+
+        ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, -7057738);
+
+
+        colorPickerDialog.setColorPickerListener(new ColorPickerListener() {
+            @Override
+            public void colorSelected(int color) {
+                Log.e(TAG, "Color: " + color);
+            }
+
+            @Override
+            public void canceled() {
+
+            }
+        });
+
+        colorPickerDialog.show();
     }
 
     @Override
@@ -173,10 +182,6 @@ public class MainActivity extends AppCompatActivity {
         // Disable OpenCV view
         if (openCVHandler != null && openCVHandler.getCameraBridgeViewBase() != null)
             openCVHandler.getCameraBridgeViewBase().disableView();
-
-        // Close thread
-        ActivityCompat.finishAffinity(this);
-        //System.exit(0);
     }
 
     /**

@@ -29,6 +29,7 @@
 package com.fern.pipo_ballus;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
@@ -45,9 +46,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Context context;
 
-    private Mat inputRGBA, matRGBA, matGray;
+    private Mat inputRGBA, matRGBA, matRGBAt, matGray;
 
     private boolean scaled;
+    private int displayOrientation;
 
     OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase, Context context) {
         this.cameraBridgeViewBase = cameraBridgeViewBase;
@@ -57,28 +59,21 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     }
 
     public CameraBridgeViewBase getCameraBridgeViewBase() {
+
         return cameraBridgeViewBase;
     }
 
     public void initView() {
+        cameraBridgeViewBase.setCvCameraViewListener(this);
         cameraBridgeViewBase.setCameraIndex(MainActivity.getSettingsContainer().cameraID);
         cameraBridgeViewBase.setVisibility(CameraBridgeViewBase.VISIBLE);
-        cameraBridgeViewBase.setCvCameraViewListener(this);
         cameraBridgeViewBase.setMaxFrameSize(640, 480);
-
-
-
-
-
 
         inputRGBA = new Mat();
         matRGBA = new Mat();
+        matRGBAt = new Mat();
         matGray = new Mat();
         scaled = false;
-    }
-
-    public void startView() {
-
     }
 
     @Override
@@ -95,16 +90,44 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         inputRGBA = inputFrame.rgba();
 
+        Imgproc.cvtColor(inputRGBA, matGray, Imgproc.COLOR_BGRA2GRAY, 1);
+        Imgproc.cvtColor(matGray, matRGBA, Imgproc.COLOR_GRAY2BGRA, 4);
 
 
+        // Get new screen orientation
+        if (!scaled)
+            displayOrientation = ((WindowManager)
+                    context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                    .getOrientation();
+
+        // Rotate frame on different orientations
+        if (displayOrientation == Surface.ROTATION_0) {
+            Core.transpose(matRGBA, matRGBAt);
+            Core.flip(matRGBAt, matRGBA, 1);
+        }
+        else if (displayOrientation == Surface.ROTATION_270) {
+            Core.flip(matRGBA, matRGBA, 0);
+            Core.flip(matRGBA, matRGBA, 1);
+        }
+        else if (displayOrientation == Surface.ROTATION_180) {
+            Core.transpose(matRGBA, matRGBAt);
+            Core.flip(matRGBAt, matRGBA, 0);
+        }
+
+        // Resize to original size
+        Imgproc.resize(matRGBA, matRGBA, inputRGBA.size());
+
+        // Set new scaled coefficient to match original aspect ratio
+        if (!scaled && (displayOrientation == Surface.ROTATION_0
+                || displayOrientation == Surface.ROTATION_180))
+                cameraBridgeViewBase.setScaleY((float)
+                        ((inputRGBA.size().width * inputRGBA.size().width)
+                                / (inputRGBA.size().height * inputRGBA.size().height)));
+
+        if (!scaled)
+            scaled = true;
 
         return matRGBA;
-    }
 
-    private void resize() {
-        if (!scaled) {
-
-            scaled = true;
-        }
     }
 }
