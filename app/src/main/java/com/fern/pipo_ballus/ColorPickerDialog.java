@@ -28,35 +28,43 @@
 
 package com.fern.pipo_ballus;
 
+import android.animation.ArgbEvaluator;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 
-import com.madrapps.pikolo.ColorPicker;
-import com.madrapps.pikolo.listeners.OnColorSelectionListener;
+import com.bikcrum.circularrangeslider.CircularRangeSlider;
+import com.google.android.material.slider.RangeSlider;
 
 /**
  * This class is a color picker dialog with two buttons (save and cancel)
  * TODO: Optimize dialog size
  */
-public class ColorPickerDialog extends Dialog implements OnColorSelectionListener {
-    private ImageView imageView;
+public class ColorPickerDialog extends Dialog {
+    private ImageView previewLower, previewUpper;
+    private RangeSlider colorPickerS, colorPickerV;
+    private Button colorSaveBtn;
+    private CircularRangeSlider colorPickerH;
 
-    private final int startColor;
+    private final ArgbEvaluator argbEvaluator;
+    private final HSVColor colorLower, colorUpper;
 
     private ColorPickerListener colorPickerListener;
 
-    private int color;
-
-    public ColorPickerDialog(@NonNull Context context, int startColor) {
+    public ColorPickerDialog(@NonNull Context context, HSVColor startColorLower,
+                             HSVColor startColorUpper) {
         super(context);
 
-        this.startColor = startColor;
+        this.colorLower = startColorLower;
+        this.colorUpper = startColorUpper;
+
+        this.argbEvaluator = new ArgbEvaluator();
     }
 
     public void setColorPickerListener(ColorPickerListener colorPickerListener) {
@@ -71,42 +79,105 @@ public class ColorPickerDialog extends Dialog implements OnColorSelectionListene
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_color_picker);
 
-        // Initialize color picker and color viewer
-        imageView = findViewById(R.id.imageView);
-        ColorPicker colorPicker = findViewById(R.id.colorPicker);
+        // Initialize elements
+        colorPickerH = findViewById(R.id.colorPickerH);
+        colorPickerS = findViewById(R.id.colorPickerS);
+        colorPickerV = findViewById(R.id.colorPickerV);
+        previewLower = findViewById(R.id.previewLower);
+        previewUpper = findViewById(R.id.previewUpper);
+        colorSaveBtn = findViewById(R.id.colorSaveBtn);
 
-        // Paint colorPicker and imageView with startColor
-        colorPicker.setColor(startColor);
-        imageView.getBackground().setColorFilter(startColor, PorterDuff.Mode.MULTIPLY);
+        // Set initial colors
+        updateView();
 
-        // Connect this class as ColorSelectionListener
-        colorPicker.setColorSelectionListener(this);
+        // Connect hue range slider
+        colorPickerH.setOnRangeChangeListener(new CircularRangeSlider.OnRangeChangeListener() {
+            @Override
+            public void onRangePress(int startIndex, int endIndex) {
+                // Set new hue and update elements
+                colorLower.setHue(endIndex * 2);
+                colorUpper.setHue(startIndex * 2);
+                updateView();
+            }
+
+            @Override
+            public void onRangeChange(int startIndex, int endIndex) {
+                // Set new hue and update elements
+                colorLower.setHue(endIndex * 2);
+                colorUpper.setHue(startIndex * 2);
+                updateView();
+            }
+
+            @Override
+            public void onRangeRelease(int startIndex, int endIndex) {
+                // Set new hue and update elements
+                colorLower.setHue(endIndex * 2);
+                colorUpper.setHue(startIndex * 2);
+                updateView();
+            }
+        });
+
+        // Connect saturation range slider
+        colorPickerS.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                // Set new saturation and update elements
+                colorLower.setSaturation(slider.getValues().get(0));
+                colorUpper.setSaturation(slider.getValues().get(1));
+                updateView();
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
+                // Set new saturation and update elements
+                colorLower.setSaturation(slider.getValues().get(0));
+                colorUpper.setSaturation(slider.getValues().get(1));
+                updateView();
+            }
+        });
+
+        // Connect value range slider
+        colorPickerV.addOnSliderTouchListener(new RangeSlider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull RangeSlider slider) {
+                // Set new value and update elements
+                colorLower.setValue(slider.getValues().get(0));
+                colorUpper.setValue(slider.getValues().get(1));
+                updateView();
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull RangeSlider slider) {
+                // Set new value and update elements
+                colorLower.setValue(slider.getValues().get(0));
+                colorUpper.setValue(slider.getValues().get(1));
+                updateView();
+            }
+        });
 
         // Connect save button
         findViewById(R.id.colorSaveBtn).setOnClickListener(view -> {
-            colorPickerListener.colorSelected(color);
+            colorPickerListener.colorSelected(colorLower, colorUpper);
             dismiss();
         });
     }
 
-    /**
-     * Colors the center circle and remembers the selected color
-     * @param color selected color
-     */
-    @Override
-    public void onColorSelected(int color) {
-        imageView.getBackground().setColorFilter(color, PorterDuff.Mode.MULTIPLY);
-        this.color = color;
-    }
+    private void updateView() {
+        // Get integer color values
+        int colorLowerInt = colorLower.getIntColor();
+        int colorUpperInt = colorUpper.getIntColor();
 
+        // Get middle color
+        int middleColor = (int) argbEvaluator.evaluate(0.5f, colorLowerInt, colorUpperInt);
 
-    @Override
-    public void onColorSelectionEnd(int i) {
-
-    }
-
-    @Override
-    public void onColorSelectionStart(int i) {
-
+        // Set colors
+        previewLower.getBackground().setColorFilter(colorLowerInt, PorterDuff.Mode.MULTIPLY);
+        previewUpper.getBackground().setColorFilter(colorUpperInt, PorterDuff.Mode.MULTIPLY);
+        colorSaveBtn.setBackgroundColor(middleColor);
+        colorSaveBtn.setTextColor(HSVColor.getContrastColor(middleColor));
+        colorPickerS.setValues(colorLower.getSaturation(), colorUpper.getSaturation());
+        colorPickerV.setValues(colorLower.getValue(), colorUpper.getValue());
+        colorPickerH.setEndIndex((int) (colorLower.getHue() / 2));
+        colorPickerH.setStartIndex((int) (colorUpper.getHue() / 2));
     }
 }

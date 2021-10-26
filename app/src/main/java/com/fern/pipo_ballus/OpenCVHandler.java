@@ -29,12 +29,9 @@
 package com.fern.pipo_ballus;
 
 import android.content.Context;
-import android.content.res.Configuration;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
-import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
@@ -58,10 +55,14 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final Context context;
 
     private Mat inputRGBA, outputRGBA, matRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
-    private Mat invertColorMatrix;
-    private Mat maskTable, maskTableCircle, maskBall, kernel, hierarchy;
-    private HSVMaskRange hsvMaskRangeTable, hsvMaskRangeBall;
-    private Scalar tableRectColor, tableMarksColor, tableTextColor, redColor, singleWhiteColor;
+    private Mat matHue, matSaturation, matValue;
+    private List<Mat> channels;
+    private Mat maskTable, maskBall, kernel, hierarchy;
+    private Scalar colorTableLower, colorTableUpper;
+    private Scalar colorBallLower, colorBallUpper;
+    private boolean tableRangeInverted, ballRangeInverted;
+    private Scalar tableRectColor, tableMarksColor, tableTextColor, ballColor;
+    private Scalar redColor, singleWhiteColor;
 
     private boolean scaled;
     private int displayOrientation;
@@ -93,24 +94,75 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         matBGRInverted = new Mat();
         matHSV = new Mat();
         matHSVInverted = new Mat();
+
+        matHue = new Mat();
+        matSaturation = new Mat();
+        matValue = new Mat();
+        channels = new ArrayList<>();
+
         maskTable = new Mat();
-        maskTableCircle = new Mat();
         maskBall = new Mat();
         kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
         hierarchy = new Mat();
-        scaled = false;
-        hsvMaskRangeTable = new HSVMaskRange();
-        hsvMaskRangeBall = new HSVMaskRange();
+
+        // Initialize HSVColor class for color conversion
+        HSVColor hsvTableLower = new HSVColor(SettingsContainer.tableColorLower);
+        HSVColor hsvTableUpper = new HSVColor(SettingsContainer.tableColorUpper);
+        HSVColor hsvBallLower = new HSVColor(SettingsContainer.ballColorLower);
+        HSVColor hsvBallUpper = new HSVColor(SettingsContainer.ballColorUpper);
+
+        // Convert table range to Scalar
+        if (hsvTableLower.getHue() == hsvTableUpper.getHue()) {
+            tableRangeInverted = false;
+            colorTableLower = new Scalar(0,
+                    hsvTableLower.getSaturationInt(), hsvTableLower.getValueInt());
+            colorTableUpper = new Scalar(179,
+                    hsvTableUpper.getSaturationInt(), hsvTableUpper.getValueInt());
+        } else if (hsvTableLower.getHue() > hsvTableUpper.getHue()) {
+            tableRangeInverted = true;
+            colorTableLower = new Scalar((int) (hsvTableLower.getHue() / 2) - 90,
+                    hsvTableLower.getSaturationInt(), hsvTableLower.getValueInt());
+            colorTableUpper = new Scalar((int) (hsvTableUpper.getHue() / 2) + 90,
+                    hsvTableUpper.getSaturationInt(), hsvTableUpper.getValueInt());
+        } else {
+            tableRangeInverted = false;
+            colorTableLower = new Scalar((int) (hsvTableLower.getHue() / 2),
+                    hsvTableLower.getSaturationInt(), hsvTableLower.getValueInt());
+            colorTableUpper = new Scalar((int) (hsvTableUpper.getHue() / 2),
+                    hsvTableUpper.getSaturationInt(), hsvTableUpper.getValueInt());
+        }
+
+        // Convert ball range to Scalar
+        if (hsvBallLower.getHue() == hsvBallUpper.getHue()) {
+            ballRangeInverted = false;
+            colorBallLower = new Scalar(0,
+                    hsvBallLower.getSaturationInt(), hsvBallLower.getValueInt());
+            colorBallUpper = new Scalar(179,
+                    hsvBallUpper.getSaturationInt(), hsvBallUpper.getValueInt());
+        } else if (hsvBallLower.getHue() > hsvBallUpper.getHue()) {
+            ballRangeInverted = true;
+            colorBallLower = new Scalar((int) (hsvBallLower.getHue() / 2) - 90,
+                    hsvBallLower.getSaturationInt(), hsvBallLower.getValueInt());
+            colorBallUpper = new Scalar((int) (hsvBallUpper.getHue() / 2) + 90,
+                    hsvBallUpper.getSaturationInt(), hsvBallUpper.getValueInt());
+        } else {
+            ballRangeInverted = false;
+            colorBallLower = new Scalar((int) (hsvBallLower.getHue() / 2),
+                    hsvBallLower.getSaturationInt(), hsvBallLower.getValueInt());
+            colorBallUpper = new Scalar((int) (hsvBallUpper.getHue() / 2),
+                    hsvBallUpper.getSaturationInt(), hsvBallUpper.getValueInt());
+        }
+
+        // Initialize basic colors
         tableRectColor = new Scalar(0, 255, 255);
         tableMarksColor = new Scalar(255, 0, 255);
         tableTextColor = new Scalar(255, 255, 0);
+        ballColor = new Scalar(255, 255, 0);
         redColor = new Scalar(255, 0, 0);
         singleWhiteColor = new Scalar(255);
 
-        // Create table mask scalars
-        hsvMaskRangeTable.fromIntColor(SettingsContainer.tableColor);
-        hsvMaskRangeBall.fromIntColor(SettingsContainer.ballColor);
-
+        // Clear scaled flag
+        scaled = false;
     }
 
     @Override
@@ -146,43 +198,50 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                 Core.transpose(inputRGBA, matRGBAt);
                 Core.flip(inputRGBA, inputRGBA, 0);
             }
-            
 
             // Clone object for debug frame
             inputRGBA.copyTo(outputRGBA);
 
-            // Convert to RGB
+            // Convert to BGR
             Imgproc.cvtColor(inputRGBA, matBGR, Imgproc.COLOR_RGBA2BGR, 3);
 
-            // Invert GRB
-            if (!scaled)
-                invertColorMatrix = new Mat(matBGR.rows(), matBGR.cols(), matBGR.type(),
-                        new Scalar(255,255,255));
+            // Invert BGR
+            Mat invertColorMatrix = new Mat(matBGR.rows(), matBGR.cols(), matBGR.type(),
+                    new Scalar(255,255,255));
             Core.subtract(invertColorMatrix, matBGR, matBGRInverted);
+            invertColorMatrix.release();
 
             // Convert to HSV
             Imgproc.cvtColor(matBGR, matHSV, Imgproc.COLOR_BGR2HSV, 3);
             Imgproc.cvtColor(matBGRInverted, matHSVInverted, Imgproc.COLOR_BGR2HSV, 3);
 
+            // Extract channels with inverted Hue from HSV
+            Core.extractChannel(matHSVInverted, matHue, 0);
+            Core.extractChannel(matHSV, matSaturation, 1);
+            Core.extractChannel(matHSV, matValue, 2);
+
+            // Make inverted HSV mat
+            channels.clear();
+            channels.add(matHue);
+            channels.add(matSaturation);
+            channels.add(matValue);
+            Core.merge(channels, matHSVInverted);
+
             // Get table mask
-            if (hsvMaskRangeTable.isInverted())
-                Core.inRange(matHSVInverted, hsvMaskRangeTable.getLower(),
-                        hsvMaskRangeTable.getUpper(), maskTable);
+            if (tableRangeInverted)
+                Core.inRange(matHSVInverted, colorTableLower, colorTableUpper, maskTable);
             else
-                Core.inRange(matHSV, hsvMaskRangeTable.getLower(),
-                        hsvMaskRangeTable.getUpper(), maskTable);
+                Core.inRange(matHSV, colorTableLower, colorTableUpper, maskTable);
 
             // Filter table mask
             Imgproc.erode(maskTable, maskTable, kernel);
             Imgproc.dilate(maskTable, maskTable, kernel);
 
             // Get ball mask
-            if (hsvMaskRangeBall.isInverted())
-                Core.inRange(matHSVInverted, hsvMaskRangeBall.getLower(),
-                        hsvMaskRangeBall.getUpper(), maskBall);
+            if (ballRangeInverted)
+                Core.inRange(matHSVInverted, colorBallLower, colorBallUpper, maskBall);
             else
-                Core.inRange(matHSV, hsvMaskRangeBall.getLower(),
-                        hsvMaskRangeBall.getUpper(), maskBall);
+                Core.inRange(matHSV, colorBallLower, colorBallUpper, maskBall);
 
             // Find table contours
             List<MatOfPoint> contours = new ArrayList<>();
@@ -211,6 +270,12 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                     // Calculate table's radius
                     int tableCircleR = (tableBoundingRect.height + tableBoundingRect.width) / 4;
 
+                    // Calculate table's center
+                    int tableCenterX = (int) ((tableBoundingRect.tl().x
+                            + tableBoundingRect.br().x) / 2);
+                    int tableCenterY = (int) ((tableBoundingRect.tl().y
+                            + tableBoundingRect.br().y) / 2);
+
                     // Draw table's rectangle
                     Imgproc.rectangle(outputRGBA, tableBoundingRect.tl(),
                             tableBoundingRect.br(), tableRectColor, 2);
@@ -238,15 +303,11 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                     Imgproc.putText(outputRGBA, "R", new Point(rX - 5, rY + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
 
-                    // Initialize maskTableCircle Mat if not scaled
-                    if (!scaled)
-                        maskTableCircle = Mat.zeros(maskTable.rows(),
-                                maskTable.cols(), CvType.CV_8UC1);
+                    // Initialize maskTableCircle
+                    Mat maskTableCircle = Mat.zeros(maskTable.rows(), maskTable.cols(), maskTable.type());
 
                     // Create circle mask of the table
-                    Imgproc.circle(maskTableCircle,
-                            new Point((int) tableBoundingRect.tl().x + tableCircleR,
-                                    (int) tableBoundingRect.tl().y + tableCircleR),
+                    Imgproc.circle(maskTableCircle, new Point(tableCenterX, tableCenterY),
                             tableCircleR, singleWhiteColor, -1);
 
                     // Erode mask to remove edges
@@ -255,14 +316,17 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                     // Calculate ball mask
                     Core.bitwise_and(maskBall, maskTableCircle, maskBall);
 
+                    // Remove maskTableCircle from memory
+                    maskTableCircle.release();
+
                     // Find ball contour
                     List<MatOfPoint> ballContours = new ArrayList<>();
-                    Imgproc.findContours(maskTable, ballContours, hierarchy, Imgproc.RETR_EXTERNAL,
+                    Imgproc.findContours(maskBall, ballContours, hierarchy, Imgproc.RETR_EXTERNAL,
                             Imgproc.CHAIN_APPROX_SIMPLE);
 
                     // Check if there is at least one contour
                     if (ballContours.size() > 0) {
-                        // Find largest contour (table)
+                        // Find largest contour (ball)
                         int maxBallArea = 100;
                         int ballContourIndex = -1;
                         for (int i = 0; i < ballContours.size(); i++) {
@@ -282,7 +346,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             float[] radius = new float[1];
                             Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
 
-                            Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], tableMarksColor, 1);
+                            Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], ballColor, 2);
 
                         } else
                             Imgproc.putText(outputRGBA, "Wrong ball size!", new Point(50, 50),
@@ -298,12 +362,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
 
 
-            //Imgproc.cvtColor(maskTable, outputRGBA, Imgproc.COLOR_GRAY2RGBA, 4);
+            //Imgproc.cvtColor(maskTableCircle, outputRGBA, Imgproc.COLOR_GRAY2RGBA, 4);
 
+            //Imgproc.cvtColor(matBGRInverted, outputRGBA, Imgproc.COLOR_BGR2RGBA, 4);
 
-            
-
-            
 
             // Resize to original size
             Imgproc.resize(outputRGBA, outputRGBA, inputFrame.rgba().size());

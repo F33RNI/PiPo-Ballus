@@ -1,50 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:pikolo="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
 
-    android:layout_width="250dp"
-    android:layout_height="300dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:gravity="center"
 
     tools:context=".ColorPickerDialog">
-
-    <com.madrapps.pikolo.HSLColorPicker
-        android:id="@+id/colorPicker"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:padding="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/colorSaveBtn"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        pikolo:arc_length="110"
-        pikolo:hue_start_angle="30"
-        pikolo:lightness_indicator_stroke_width="0dp"
-        pikolo:lightness_start_angle="270"
-        pikolo:radius_offset="20dp"
-        pikolo:saturation_indicator_stroke_color="@color/black"
-        pikolo:saturation_start_angle="150"
-        tools:layout_constraintBottom_creator="1"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintRight_creator="1"
-        tools:layout_constraintTop_creator="1" />
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@drawable/bg_circle"
-        app:layout_constraintBottom_toBottomOf="@+id/colorPicker"
-        app:layout_constraintEnd_toEndOf="@+id/colorPicker"
-        app:layout_constraintStart_toStartOf="@+id/colorPicker"
-        app:layout_constraintTop_toTopOf="@+id/colorPicker"
-        tools:ignore="ContentDescription" />
 
     <Button
         android:id="@+id/colorSaveBtn"
@@ -52,10 +16,136 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:text="@string/save"
+        app:layout_constraintBottom_toBottomOf="@+id/previewUpper"
+        app:layout_constraintEnd_toStartOf="@+id/previewUpper"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/previewLower" />
+
+    <ImageView
+        android:id="@+id/previewLower"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_circle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/previewUpper"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_circle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/ic_hue_16_gradientl"
+        tools:ignore="ContentDescription" />
+
+    <com.bikcrum.circularrangeslider.CircularRangeSlider
+        android:id="@+id/colorPickerH"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+
+        app:labelColor="@color/transparent"
+        app:progressColor="@color/transparent"
+        app:axisColor="@color/transparent"
+        app:borderColor="@color/black"
+        app:borderWidth="2dp"
+        app:circleColor="@color/transparent"
+        app:startIndex="10"
+        app:endIndex="170"
+        app:hideLabel="true"
+        app:max="179"
+        app:sectorColor="@color/sector_color"
+        app:sliderColor="@color/black"
+        app:sliderLength="20dp"
+        app:sliderWidth="5dp"
+        app:startFrom="top"
+        app:stepLength="0dp">
+
+    </com.bikcrum.circularrangeslider.CircularRangeSlider>
+
+    <LinearLayout
+        android:id="@+id/linearLayout4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/colorPickerH">
+
+        <TextView
+            android:id="@+id/textViewS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:text="S"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.slider.RangeSlider
+            android:id="@+id/colorPickerS"
+            android:valueFrom="0"
+            android:valueTo="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/colorSaveBtn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/textViewV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:text="V"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.slider.RangeSlider
+            android:id="@+id/colorPickerV"
+            android:valueFrom="0"
+            android:valueTo="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </LinearLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

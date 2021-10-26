@@ -28,8 +28,8 @@
 
 package com.fern.pipo_ballus;
 
+import android.animation.ArgbEvaluator;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -50,10 +50,12 @@ public class SettingsActivity extends AppCompatActivity {
 
     private final static String[] cameraOptions = new String[]{"Any", "Back", "Front"};
 
+    private ArgbEvaluator argbEvaluator;
+
     // Local settings
     private int cameraID;
-    private int tableColor;
-    private int ballColor;
+    private int tableColorLower, tableColorUpper;
+    private int ballColorLower, ballColorUpper;
 
     // Elements
     Spinner cameraIDSpinner;
@@ -66,6 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         // Initialize elements
+        argbEvaluator = new ArgbEvaluator();
         BottomNavigationView bottomNavigationView = findViewById(R.id.navigationView);
         cameraIDSpinner = findViewById(R.id.cameraIDSpinner);
         settingsTableColor = findViewById(R.id.settingsTableColor);
@@ -93,8 +96,10 @@ public class SettingsActivity extends AppCompatActivity {
         findViewById(R.id.settingsResetBtn).setOnClickListener(view -> {
             // Reset settings to default
             cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-            tableColor = Color.GREEN;
-            ballColor = Color.RED;
+            tableColorLower = 0xff00f000;
+            tableColorUpper = 0xff00ff00;
+            ballColorLower = 0xfff00000;
+            ballColorUpper = 0xffff0000;
 
             // Update view
             updateView();
@@ -124,36 +129,40 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Connect table color button
         settingsTableColor.setOnClickListener(view -> {
-            ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, tableColor);
-            colorPickerDialog.setColorPickerListener(color -> {
-                // Remember edited color
-                tableColor = color;
+            ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this,
+                    new HSVColor(tableColorLower), new HSVColor(tableColorUpper));
+            colorPickerDialog.setColorPickerListener((lower, upper) -> {
+                // Set new colors
+                tableColorLower = lower.getIntColor();
+                tableColorUpper = upper.getIntColor();
 
-                // Update view
+                // Update View
                 updateView();
-
             });
             colorPickerDialog.show();
         });
 
         // Connect ball color button
         settingsBallColor.setOnClickListener(view -> {
-            ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, ballColor);
-            colorPickerDialog.setColorPickerListener(color -> {
-                // Remember edited color
-                ballColor = color;
+            ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this,
+                    new HSVColor(ballColorLower), new HSVColor(ballColorUpper));
+            colorPickerDialog.setColorPickerListener((lower, upper) -> {
+                // Set new colors
+                ballColorLower = lower.getIntColor();
+                ballColorUpper = upper.getIntColor();
 
-                // Update view
+                // Update View
                 updateView();
-
             });
             colorPickerDialog.show();
         });
 
         // Copy settings to local variables
         this.cameraID = SettingsContainer.cameraID;
-        this.tableColor = SettingsContainer.tableColor;
-        this.ballColor = SettingsContainer.ballColor;
+        this.tableColorLower = SettingsContainer.tableColorLower;
+        this.tableColorUpper = SettingsContainer.tableColorUpper;
+        this.ballColorLower = SettingsContainer.ballColorLower;
+        this.ballColorUpper = SettingsContainer.ballColorUpper;
 
         // Load view
         updateView();
@@ -171,22 +180,28 @@ public class SettingsActivity extends AppCompatActivity {
             cameraIDSpinner.setSelection(0);
 
         // Table color
-        settingsTableColor.setBackgroundColor(tableColor);
-        settingsTableColor.setTextColor(getContrastColor(tableColor));
-        settingsTableColor.setText(String.format("#%06X", (0xFFFFFF & tableColor)));
+        int tableMidColor = (int) argbEvaluator.evaluate(0.5f, tableColorLower,
+                tableColorUpper);
+        settingsTableColor.setBackgroundColor(tableMidColor);
+        settingsTableColor.setTextColor(HSVColor.getContrastColor(tableMidColor));
+        settingsTableColor.setText(String.format("#%06X", (0xFFFFFF & tableMidColor)));
 
         // Ball color
-        settingsBallColor.setBackgroundColor(ballColor);
-        settingsBallColor.setTextColor(getContrastColor(ballColor));
-        settingsBallColor.setText(String.format("#%06X", (0xFFFFFF & ballColor)));
+        int ballMidColor = (int) argbEvaluator.evaluate(0.5f, ballColorLower,
+                ballColorUpper);
+        settingsBallColor.setBackgroundColor(ballMidColor);
+        settingsBallColor.setTextColor(HSVColor.getContrastColor(ballMidColor));
+        settingsBallColor.setText(String.format("#%06X", (0xFFFFFF & ballMidColor)));
     }
 
     private void saveSettings() {
         try {
             // Copy settings from local variables
             SettingsContainer.cameraID = this.cameraID;
-            SettingsContainer.tableColor = this.tableColor;
-            SettingsContainer.ballColor = this.ballColor;
+            SettingsContainer.tableColorLower = this.tableColorLower;
+            SettingsContainer.tableColorUpper = this.tableColorUpper;
+            SettingsContainer.ballColorLower = this.ballColorLower;
+            SettingsContainer.ballColorUpper = this.ballColorUpper;
 
             // Save settings to file
             SettingsHandler.saveSettings(HomeActivity.settingsFile, this);
@@ -197,11 +212,5 @@ public class SettingsActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG).show();
             Log.e(TAG, "Wrong settings provided!", e);
         }
-    }
-
-    public static int getContrastColor(int color) {
-        double y = (299 * Color.red(color) + 587 * Color.green(color)
-                + 114 * Color.blue(color)) / 1000.0;
-        return y >= 128 ? Color.BLACK: Color.WHITE;
     }
 }

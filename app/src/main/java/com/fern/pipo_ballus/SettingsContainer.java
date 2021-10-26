@@ -37,6 +37,9 @@ import org.opencv.android.CameraBridgeViewBase;
  */
 public class SettingsContainer {
     public static int cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-    public static int tableColor = Color.GREEN;
-    public static int ballColor = Color.RED;
+    public static int tableColorLower = 0xff00f000;
+    public static int tableColorUpper = 0xff00ff00;
+    public static int ballColorLower = 0xfff00000;
+    public static int ballColorUpper = 0xffff0000;
+    public static int hueRange = 20;
 }

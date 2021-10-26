@@ -22,12 +22,15 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+
+        android:padding="16dp"
         tools:ignore="SpeakableTextPresentCheck">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:gravity="center_vertical"
             android:paddingLeft="10dp"
             android:paddingRight="10dp">
 
@@ -40,7 +43,8 @@
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:layout_weight="1"
                     android:text="@string/camera_" />
 
@@ -56,14 +60,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="@string/table_color" />
+                    android:text="@string/table_color_range" />
 
                 <Button
                     android:id="@+id/settingsTableColor"
@@ -77,14 +83,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:paddingTop="10dp"
                 android:paddingBottom="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="@string/ball_color" />
+                    android:text="@string/ball_color_range" />
 
                 <Button
                     android:id="@+id/settingsBallColor"

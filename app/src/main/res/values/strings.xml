@@ -7,6 +7,6 @@
     <string name="camera">Camera</string>
     <string name="reset">Reset</string>
     <string name="camera_">Camera:</string>
-    <string name="table_color">Table color:</string>
-    <string name="ball_color">Ball color:</string>
+    <string name="table_color_range">Table color range:</string>
+    <string name="ball_color_range">Ball color range:</string>
 </resources>

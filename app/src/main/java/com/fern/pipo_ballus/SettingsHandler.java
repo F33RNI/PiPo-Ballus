@@ -82,8 +82,10 @@ public class SettingsHandler {
             JSONObject jsonObject = new JSONObject(stringBuilder.toString());
 
             SettingsContainer.cameraID = (int) jsonObject.get("camera_id");
-            SettingsContainer.tableColor = (int) jsonObject.get("table_color");
-            SettingsContainer.ballColor = (int) jsonObject.get("ball_color");
+            SettingsContainer.tableColorLower = (int) jsonObject.get("table_color_lower");
+            SettingsContainer.tableColorUpper = (int) jsonObject.get("table_color_upper");
+            SettingsContainer.ballColorLower = (int) jsonObject.get("ball_color_lower");
+            SettingsContainer.ballColorUpper = (int) jsonObject.get("ball_color_upper");
 
         } catch (Exception e) {
             // Show error message
@@ -117,8 +119,10 @@ public class SettingsHandler {
             // Create new JSONObject
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("camera_id", SettingsContainer.cameraID);
-            jsonObject.put("table_color", SettingsContainer.tableColor);
-            jsonObject.put("ball_color", SettingsContainer.ballColor);
+            jsonObject.put("table_color_lower", SettingsContainer.tableColorLower);
+            jsonObject.put("table_color_upper", SettingsContainer.tableColorUpper);
+            jsonObject.put("ball_color_lower", SettingsContainer.ballColorLower);
+            jsonObject.put("ball_color_upper", SettingsContainer.ballColorUpper);
 
             // Write JSONObject to file
             FileWriter fileWriter = new FileWriter(settingsFile);
