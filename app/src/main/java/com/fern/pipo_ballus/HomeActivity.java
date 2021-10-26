@@ -48,7 +48,6 @@ public class HomeActivity extends AppCompatActivity {
         // Load and parse settings
         settingsFile = new File(getBaseContext().getExternalFilesDir( null),
                 "settings.json");
-        SettingsContainer.resetToDefaults();
         new SettingsHandler(settingsFile, this).readSettings();
 
         // Show home activity

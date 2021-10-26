@@ -61,17 +61,17 @@ public class HSVMaskRange {
             this.inverted = true;
         }
 
-        int saturationLow = (int) (hsv[1] * 255) - 50;
+        int saturationLow = (int) (hsv[1] * 255) - 40;
         if (saturationLow < 0)
             saturationLow = 0;
-        int saturationHigh = (int) (hsv[1] * 255) + 50;
+        int saturationHigh = (int) (hsv[1] * 255) + 40;
         if (saturationHigh > 255)
             saturationHigh = 255;
 
-        int valueLow = (int) (hsv[2] * 255) - 50;
+        int valueLow = (int) (hsv[2] * 255) - 70;
         if (valueLow < 0)
             valueLow = 0;
-        int valueHigh = (int) (hsv[2] * 255) + 50;
+        int valueHigh = (int) (hsv[2] * 255) + 70;
         if (valueHigh > 255)
             valueHigh = 255;
 

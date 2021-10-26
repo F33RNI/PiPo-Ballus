@@ -36,13 +36,7 @@ import org.opencv.android.CameraBridgeViewBase;
  * This class stores application settings
  */
 public class SettingsContainer {
-    public static int cameraID;
-    public static int tableColor;
-    public static int ballColor;
-
-    public static void resetToDefaults() {
-        cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-        tableColor = Color.GREEN;
-        ballColor = Color.RED;
-    }
+    public static int cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
+    public static int tableColor = Color.GREEN;
+    public static int ballColor = Color.RED;
 }

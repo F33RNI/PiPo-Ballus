@@ -92,7 +92,9 @@ public class SettingsActivity extends AppCompatActivity {
         // Connect Restore button
         findViewById(R.id.settingsResetBtn).setOnClickListener(view -> {
             // Reset settings to default
-            SettingsContainer.resetToDefaults();
+            cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
+            tableColor = Color.GREEN;
+            ballColor = Color.RED;
 
             // Update view
             updateView();

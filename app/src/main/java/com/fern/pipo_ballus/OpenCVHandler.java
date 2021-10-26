@@ -38,10 +38,18 @@ import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2 {
     private final String TAG = this.getClass().getName();
@@ -49,10 +57,11 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Context context;
 
-    private Mat inputRGBA, outputRGBA, outputRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
+    private Mat inputRGBA, outputRGBA, matRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
     private Mat invertColorMatrix;
-    private Mat maskTable, maskBall;
+    private Mat maskTable, maskTableCircle, maskBall, kernel, hierarchy;
     private HSVMaskRange hsvMaskRangeTable, hsvMaskRangeBall;
+    private Scalar tableRectColor, tableMarksColor, tableTextColor, redColor, singleWhiteColor;
 
     private boolean scaled;
     private int displayOrientation;
@@ -79,16 +88,24 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         // Initialize variables
         inputRGBA = new Mat();
         outputRGBA = new Mat();
-        outputRGBAt = new Mat();
+        matRGBAt = new Mat();
         matBGR = new Mat();
         matBGRInverted = new Mat();
         matHSV = new Mat();
         matHSVInverted = new Mat();
         maskTable = new Mat();
+        maskTableCircle = new Mat();
         maskBall = new Mat();
+        kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
+        hierarchy = new Mat();
         scaled = false;
         hsvMaskRangeTable = new HSVMaskRange();
         hsvMaskRangeBall = new HSVMaskRange();
+        tableRectColor = new Scalar(0, 255, 255);
+        tableMarksColor = new Scalar(255, 0, 255);
+        tableTextColor = new Scalar(255, 255, 0);
+        redColor = new Scalar(255, 0, 0);
+        singleWhiteColor = new Scalar(255);
 
         // Create table mask scalars
         hsvMaskRangeTable.fromIntColor(SettingsContainer.tableColor);
@@ -111,6 +128,25 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         try {
             // Read input RGBA image
             inputRGBA = inputFrame.rgba();
+
+            // Get new screen orientation
+            if (!scaled)
+                displayOrientation = ((WindowManager)
+                        context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                        .getOrientation();
+
+            // Rotate frame on different orientations
+            if (displayOrientation == Surface.ROTATION_0) {
+                Core.transpose(inputRGBA, matRGBAt);
+                Core.flip(matRGBAt, inputRGBA, 1);
+            } else if (displayOrientation == Surface.ROTATION_270) {
+                Core.flip(inputRGBA, inputRGBA, 0);
+                Core.flip(inputRGBA, inputRGBA, 1);
+            } else if (displayOrientation == Surface.ROTATION_180) {
+                Core.transpose(inputRGBA, matRGBAt);
+                Core.flip(inputRGBA, inputRGBA, 0);
+            }
+            
 
             // Clone object for debug frame
             inputRGBA.copyTo(outputRGBA);
@@ -136,6 +172,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                 Core.inRange(matHSV, hsvMaskRangeTable.getLower(),
                         hsvMaskRangeTable.getUpper(), maskTable);
 
+            // Filter table mask
+            Imgproc.erode(maskTable, maskTable, kernel);
+            Imgproc.dilate(maskTable, maskTable, kernel);
+
             // Get ball mask
             if (hsvMaskRangeBall.isInverted())
                 Core.inRange(matHSVInverted, hsvMaskRangeBall.getLower(),
@@ -144,30 +184,129 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                 Core.inRange(matHSV, hsvMaskRangeBall.getLower(),
                         hsvMaskRangeBall.getUpper(), maskBall);
 
+            // Find table contours
+            List<MatOfPoint> contours = new ArrayList<>();
+            Imgproc.findContours(maskTable, contours, hierarchy, Imgproc.RETR_EXTERNAL,
+                    Imgproc.CHAIN_APPROX_SIMPLE);
+
+            // Check if there is at least one contour
+            if (contours.size() > 0) {
+                // Find largest contour (table)
+                int maxContourArea = 0;
+                int tableContourIndex = 0;
+                for (int i = 0; i < contours.size(); i++) {
+                    int contourArea = (int) Imgproc.contourArea(contours.get(i));
+                    if (contourArea > maxContourArea) {
+                        maxContourArea = contourArea;
+                        tableContourIndex = i;
+                    }
+                }
+
+                // Check table's area
+                if (maxContourArea > 1000) {
+
+                    // Extract table's bounding rectangle
+                    Rect tableBoundingRect = Imgproc.boundingRect(contours.get(tableContourIndex));
+
+                    // Calculate table's radius
+                    int tableCircleR = (tableBoundingRect.height + tableBoundingRect.width) / 4;
+
+                    // Draw table's rectangle
+                    Imgproc.rectangle(outputRGBA, tableBoundingRect.tl(),
+                            tableBoundingRect.br(), tableRectColor, 2);
+
+                    // Calculate frame reference points
+                    int pX = (int) tableBoundingRect.tl().x + tableCircleR;
+                    int pY = (int) tableBoundingRect.tl().y;
+                    int rX = (int) tableBoundingRect.tl().x + tableCircleR
+                            - (int) (tableCircleR / 2 * Math.sqrt(3.));
+                    int rY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
+                    int qX = (int) tableBoundingRect.tl().x + tableCircleR
+                            + (int) (tableCircleR / 2 * Math.sqrt(3.));
+                    int qY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
+
+                    // Draw reference circles, text and lines
+                    Imgproc.line(outputRGBA, new Point(pX, pY),
+                            new Point(pX, pY + (int) (tableCircleR / 4)), tableMarksColor, 1);
+                    Imgproc.circle(outputRGBA, new Point(pX, pY), 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "P", new Point(pX - 5, pY + 5),
+                            Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
+                    Imgproc.circle(outputRGBA, new Point(qX, qY), 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "Q", new Point(qX - 5, qY + 5),
+                            Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
+                    Imgproc.circle(outputRGBA, new Point(rX, rY), 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "R", new Point(rX - 5, rY + 5),
+                            Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
+
+                    // Initialize maskTableCircle Mat if not scaled
+                    if (!scaled)
+                        maskTableCircle = Mat.zeros(maskTable.rows(),
+                                maskTable.cols(), CvType.CV_8UC1);
+
+                    // Create circle mask of the table
+                    Imgproc.circle(maskTableCircle,
+                            new Point((int) tableBoundingRect.tl().x + tableCircleR,
+                                    (int) tableBoundingRect.tl().y + tableCircleR),
+                            tableCircleR, singleWhiteColor, -1);
+
+                    // Erode mask to remove edges
+                    Imgproc.erode(maskTableCircle, maskTableCircle, kernel);
+
+                    // Calculate ball mask
+                    Core.bitwise_and(maskBall, maskTableCircle, maskBall);
+
+                    // Find ball contour
+                    List<MatOfPoint> ballContours = new ArrayList<>();
+                    Imgproc.findContours(maskTable, ballContours, hierarchy, Imgproc.RETR_EXTERNAL,
+                            Imgproc.CHAIN_APPROX_SIMPLE);
+
+                    // Check if there is at least one contour
+                    if (ballContours.size() > 0) {
+                        // Find largest contour (table)
+                        int maxBallArea = 100;
+                        int ballContourIndex = -1;
+                        for (int i = 0; i < ballContours.size(); i++) {
+                            int contourArea = (int) Imgproc.contourArea(ballContours.get(i));
+                            if (contourArea > maxBallArea && contourArea < maxContourArea / 4) {
+                                maxBallArea = contourArea;
+                                ballContourIndex = i;
+                            }
+                        }
+
+                        // Check if correct size found
+                        if (ballContourIndex > 0) {
+                            MatOfPoint2f ballContour = new MatOfPoint2f();
+                            ballContours.get(ballContourIndex).convertTo(ballContour,
+                                    CvType.CV_32F);
+                            Point ballCenter = new Point();
+                            float[] radius = new float[1];
+                            Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
+
+                            Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], tableMarksColor, 1);
+
+                        } else
+                            Imgproc.putText(outputRGBA, "Wrong ball size!", new Point(50, 50),
+                                    Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
+                    } else
+                        Imgproc.putText(outputRGBA, "Ball not found!", new Point(50, 50),
+                                Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
+                } else
+                    Imgproc.putText(outputRGBA, "Table too small!", new Point(50, 50),
+                            Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
+            } else
+                Imgproc.putText(outputRGBA, "Table not found!", new Point(50, 50),
+                        Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
+
 
             //Imgproc.cvtColor(maskTable, outputRGBA, Imgproc.COLOR_GRAY2RGBA, 4);
 
 
-            // Get new screen orientation
-            if (!scaled)
-                displayOrientation = ((WindowManager)
-                        context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                        .getOrientation();
+            
 
-            // Rotate frame on different orientations
-            if (displayOrientation == Surface.ROTATION_0) {
-                Core.transpose(outputRGBA, outputRGBAt);
-                Core.flip(outputRGBAt, outputRGBA, 1);
-            } else if (displayOrientation == Surface.ROTATION_270) {
-                Core.flip(outputRGBA, outputRGBA, 0);
-                Core.flip(outputRGBA, outputRGBA, 1);
-            } else if (displayOrientation == Surface.ROTATION_180) {
-                Core.transpose(outputRGBA, outputRGBAt);
-                Core.flip(outputRGBA, outputRGBA, 0);
-            }
+            
 
             // Resize to original size
-            Imgproc.resize(outputRGBA, outputRGBA, inputRGBA.size());
+            Imgproc.resize(outputRGBA, outputRGBA, inputFrame.rgba().size());
 
             // Set new scaled coefficient to match original aspect ratio
             if (!scaled && (displayOrientation == Surface.ROTATION_0
@@ -176,6 +315,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                         ((inputRGBA.size().width * inputRGBA.size().width)
                                 / (inputRGBA.size().height * inputRGBA.size().height)));
 
+            // Set scaled flag
             if (!scaled)
                 scaled = true;
 
