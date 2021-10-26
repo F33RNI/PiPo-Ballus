@@ -66,8 +66,10 @@ public class SettingsHandler {
         // Log settings file location
         Log.i(TAG, "Reading settings from " + settingsFile.getAbsolutePath());
 
-        if (!settingsFile.exists())
+        if (!settingsFile.exists()) {
+            SettingsContainer.resetToDefaults();
             saveSettings(settingsFile, activity);
+        }
         try {
             // Read file to JSONObject
             FileReader fileReader = new FileReader(settingsFile);
@@ -80,11 +82,11 @@ public class SettingsHandler {
             }
             bufferedReader.close();
             JSONObject jsonObject = new JSONObject(stringBuilder.toString());
-            SettingsContainer settingsContainer = MainActivity.getSettingsContainer();
 
-            settingsContainer.cameraID = (int) jsonObject.get("camera_id");
+            SettingsContainer.cameraID = (int) jsonObject.get("camera_id");
+            SettingsContainer.tableColor = (int) jsonObject.get("table_color");
+            SettingsContainer.ballColor = (int) jsonObject.get("ball_color");
 
-            MainActivity.setSettingsContainer(settingsContainer);
         } catch (Exception e) {
             // Show error message
             Toast.makeText(activity, "Error parsing settings!",
@@ -116,9 +118,9 @@ public class SettingsHandler {
         try {
             // Create new JSONObject
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("camera_id",
-                    MainActivity.getSettingsContainer().cameraID);
-
+            jsonObject.put("camera_id", SettingsContainer.cameraID);
+            jsonObject.put("table_color", SettingsContainer.tableColor);
+            jsonObject.put("ball_color", SettingsContainer.ballColor);
 
             // Write JSONObject to file
             FileWriter fileWriter = new FileWriter(settingsFile);

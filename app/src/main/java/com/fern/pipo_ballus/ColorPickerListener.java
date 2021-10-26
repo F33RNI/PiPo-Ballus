@@ -29,9 +29,8 @@
 package com.fern.pipo_ballus;
 
 /**
- * This interface is used to transmit a color or a cancel signal from a ColorPickerDialog class
+ * This interface is used to transmit a color signal from a ColorPickerDialog class
  */
 public interface ColorPickerListener {
     void colorSelected(int color);
-    void canceled();
 }

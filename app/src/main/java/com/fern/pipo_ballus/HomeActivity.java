@@ -36,10 +36,22 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import java.io.File;
+
 public class HomeActivity extends AppCompatActivity {
+    public static File settingsFile;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Load and parse settings
+        settingsFile = new File(getBaseContext().getExternalFilesDir( null),
+                "settings.json");
+        SettingsContainer.resetToDefaults();
+        new SettingsHandler(settingsFile, this).readSettings();
+
+        // Show home activity
         setContentView(R.layout.activity_home);
 
         // Remove action bar
@@ -57,10 +69,12 @@ public class HomeActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.menuCamera) {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                System.gc();
                 finish();
             }
             else if (item.getItemId() == R.id.menuSettings) {
                 startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                System.gc();
                 finish();
             }
             return false;

@@ -28,10 +28,6 @@
 
 package com.fern.pipo_ballus;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -40,13 +36,15 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-
-import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
@@ -56,21 +54,7 @@ public class MainActivity extends AppCompatActivity {
     };
     private final int PERMISSION_REQUEST_CODE = 1;
 
-    public static File settingsFile;
-    private static SettingsContainer settingsContainer;
-
     private OpenCVHandler openCVHandler;
-
-
-
-    public static SettingsContainer getSettingsContainer() {
-        return settingsContainer;
-    }
-
-    public static void setSettingsContainer(SettingsContainer settingsContainer) {
-        MainActivity.settingsContainer = settingsContainer;
-    }
-
 
     /**
      * Checks if OpenCV library is loaded
@@ -80,12 +64,6 @@ public class MainActivity extends AppCompatActivity {
         public void onManagerConnected(int status) {
             if (status == LoaderCallbackInterface.SUCCESS) {
                 Log.i("OpenCV", "OpenCV loaded successfully");
-
-                // Parse settings
-                settingsContainer = new SettingsContainer();
-                SettingsHandler settingsHandler = new SettingsHandler(settingsFile,
-                        MainActivity.this);
-                settingsHandler.readSettings();
 
                 // Request permissions
                 if (hasPermissions(MainActivity.this, PERMISSIONS)) {
@@ -116,10 +94,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Load settings file
-        settingsFile = new File(getBaseContext().getExternalFilesDir( null),
-                "settings.json");
-
         // Open layout
         setContentView(R.layout.activity_main);
 
@@ -138,10 +112,12 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.menuHome) {
                 startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+                System.gc();
                 finish();
             }
             else if (item.getItemId() == R.id.menuSettings) {
                 startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+                System.gc();
                 finish();
             }
             return false;
@@ -161,23 +137,6 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "OpenCV library found inside package. Using it!");
             baseLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
-
-        /*ColorPickerDialog colorPickerDialog = new ColorPickerDialog(this, -7057738);
-
-
-        colorPickerDialog.setColorPickerListener(new ColorPickerListener() {
-            @Override
-            public void colorSelected(int color) {
-                Log.e(TAG, "Color: " + color);
-            }
-
-            @Override
-            public void canceled() {
-
-            }
-        });
-
-        colorPickerDialog.show();*/
     }
 
     @Override

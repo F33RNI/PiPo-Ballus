@@ -15,7 +15,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:padding="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/colorCancelBtn"
+        app:layout_constraintBottom_toTopOf="@+id/colorSaveBtn"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -23,7 +23,7 @@
         pikolo:hue_start_angle="30"
         pikolo:lightness_indicator_stroke_width="0dp"
         pikolo:lightness_start_angle="270"
-        pikolo:radius_offset="10dp"
+        pikolo:radius_offset="20dp"
         pikolo:saturation_indicator_stroke_color="@color/black"
         pikolo:saturation_start_angle="150"
         tools:layout_constraintBottom_creator="1"
@@ -47,17 +47,6 @@
         tools:ignore="ContentDescription" />
 
     <Button
-        android:id="@+id/colorCancelBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:text="@string/cancel"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/colorSaveBtn"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/colorSaveBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -66,7 +55,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/colorCancelBtn" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

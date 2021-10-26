@@ -30,13 +30,16 @@ package com.fern.pipo_ballus;
 
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
@@ -46,7 +49,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Context context;
 
-    private Mat inputRGBA, matRGBA, matRGBAt, matGray;
+    private Mat inputRGBA, outputRGBA, outputRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
+    private Mat invertColorMatrix;
+    private Mat maskTable, maskBall;
+    private HSVMaskRange hsvMaskRangeTable, hsvMaskRangeBall;
 
     private boolean scaled;
     private int displayOrientation;
@@ -64,16 +70,30 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     }
 
     public void initView() {
+        // Initialize CameraBridgeViewBase object
         cameraBridgeViewBase.setCvCameraViewListener(this);
-        cameraBridgeViewBase.setCameraIndex(MainActivity.getSettingsContainer().cameraID);
+        cameraBridgeViewBase.setCameraIndex(SettingsContainer.cameraID);
         cameraBridgeViewBase.setVisibility(CameraBridgeViewBase.VISIBLE);
         cameraBridgeViewBase.setMaxFrameSize(640, 480);
 
+        // Initialize variables
         inputRGBA = new Mat();
-        matRGBA = new Mat();
-        matRGBAt = new Mat();
-        matGray = new Mat();
+        outputRGBA = new Mat();
+        outputRGBAt = new Mat();
+        matBGR = new Mat();
+        matBGRInverted = new Mat();
+        matHSV = new Mat();
+        matHSVInverted = new Mat();
+        maskTable = new Mat();
+        maskBall = new Mat();
         scaled = false;
+        hsvMaskRangeTable = new HSVMaskRange();
+        hsvMaskRangeBall = new HSVMaskRange();
+
+        // Create table mask scalars
+        hsvMaskRangeTable.fromIntColor(SettingsContainer.tableColor);
+        hsvMaskRangeBall.fromIntColor(SettingsContainer.ballColor);
+
     }
 
     @Override
@@ -88,46 +108,83 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
-        inputRGBA = inputFrame.rgba();
+        try {
+            // Read input RGBA image
+            inputRGBA = inputFrame.rgba();
 
-        Imgproc.cvtColor(inputRGBA, matGray, Imgproc.COLOR_BGRA2GRAY, 1);
-        Imgproc.cvtColor(matGray, matRGBA, Imgproc.COLOR_GRAY2BGRA, 4);
+            // Clone object for debug frame
+            inputRGBA.copyTo(outputRGBA);
+
+            // Convert to RGB
+            Imgproc.cvtColor(inputRGBA, matBGR, Imgproc.COLOR_RGBA2BGR, 3);
+
+            // Invert GRB
+            if (!scaled)
+                invertColorMatrix = new Mat(matBGR.rows(), matBGR.cols(), matBGR.type(),
+                        new Scalar(255,255,255));
+            Core.subtract(invertColorMatrix, matBGR, matBGRInverted);
+
+            // Convert to HSV
+            Imgproc.cvtColor(matBGR, matHSV, Imgproc.COLOR_BGR2HSV, 3);
+            Imgproc.cvtColor(matBGRInverted, matHSVInverted, Imgproc.COLOR_BGR2HSV, 3);
+
+            // Get table mask
+            if (hsvMaskRangeTable.isInverted())
+                Core.inRange(matHSVInverted, hsvMaskRangeTable.getLower(),
+                        hsvMaskRangeTable.getUpper(), maskTable);
+            else
+                Core.inRange(matHSV, hsvMaskRangeTable.getLower(),
+                        hsvMaskRangeTable.getUpper(), maskTable);
+
+            // Get ball mask
+            if (hsvMaskRangeBall.isInverted())
+                Core.inRange(matHSVInverted, hsvMaskRangeBall.getLower(),
+                        hsvMaskRangeBall.getUpper(), maskBall);
+            else
+                Core.inRange(matHSV, hsvMaskRangeBall.getLower(),
+                        hsvMaskRangeBall.getUpper(), maskBall);
 
 
-        // Get new screen orientation
-        if (!scaled)
-            displayOrientation = ((WindowManager)
-                    context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                    .getOrientation();
+            //Imgproc.cvtColor(maskTable, outputRGBA, Imgproc.COLOR_GRAY2RGBA, 4);
 
-        // Rotate frame on different orientations
-        if (displayOrientation == Surface.ROTATION_0) {
-            Core.transpose(matRGBA, matRGBAt);
-            Core.flip(matRGBAt, matRGBA, 1);
-        }
-        else if (displayOrientation == Surface.ROTATION_270) {
-            Core.flip(matRGBA, matRGBA, 0);
-            Core.flip(matRGBA, matRGBA, 1);
-        }
-        else if (displayOrientation == Surface.ROTATION_180) {
-            Core.transpose(matRGBA, matRGBAt);
-            Core.flip(matRGBAt, matRGBA, 0);
-        }
 
-        // Resize to original size
-        Imgproc.resize(matRGBA, matRGBA, inputRGBA.size());
+            // Get new screen orientation
+            if (!scaled)
+                displayOrientation = ((WindowManager)
+                        context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+                        .getOrientation();
 
-        // Set new scaled coefficient to match original aspect ratio
-        if (!scaled && (displayOrientation == Surface.ROTATION_0
-                || displayOrientation == Surface.ROTATION_180))
+            // Rotate frame on different orientations
+            if (displayOrientation == Surface.ROTATION_0) {
+                Core.transpose(outputRGBA, outputRGBAt);
+                Core.flip(outputRGBAt, outputRGBA, 1);
+            } else if (displayOrientation == Surface.ROTATION_270) {
+                Core.flip(outputRGBA, outputRGBA, 0);
+                Core.flip(outputRGBA, outputRGBA, 1);
+            } else if (displayOrientation == Surface.ROTATION_180) {
+                Core.transpose(outputRGBA, outputRGBAt);
+                Core.flip(outputRGBA, outputRGBA, 0);
+            }
+
+            // Resize to original size
+            Imgproc.resize(outputRGBA, outputRGBA, inputRGBA.size());
+
+            // Set new scaled coefficient to match original aspect ratio
+            if (!scaled && (displayOrientation == Surface.ROTATION_0
+                    || displayOrientation == Surface.ROTATION_180))
                 cameraBridgeViewBase.setScaleY((float)
                         ((inputRGBA.size().width * inputRGBA.size().width)
                                 / (inputRGBA.size().height * inputRGBA.size().height)));
 
-        if (!scaled)
-            scaled = true;
+            if (!scaled)
+                scaled = true;
 
-        return matRGBA;
+            return outputRGBA;
+        } catch (Exception e) {
+            // Show error message
+            Log.e(TAG, "Error processing frame!", e);
+        }
 
+        return inputFrame.rgba();
     }
 }

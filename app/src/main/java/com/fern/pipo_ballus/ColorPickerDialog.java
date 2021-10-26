@@ -87,13 +87,6 @@ public class ColorPickerDialog extends Dialog implements OnColorSelectionListene
             colorPickerListener.colorSelected(color);
             dismiss();
         });
-
-        // Connect cancel button
-        findViewById(R.id.colorCancelBtn).setOnClickListener(view -> {
-            colorPickerListener.canceled();
-            dismiss();
-        });
-
     }
 
     /**

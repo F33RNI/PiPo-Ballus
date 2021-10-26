@@ -30,19 +30,52 @@ package com.fern.pipo_ballus;
 
 import android.graphics.Color;
 
-import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.core.Scalar;
 
-/**
- * This class stores application settings
- */
-public class SettingsContainer {
-    public static int cameraID;
-    public static int tableColor;
-    public static int ballColor;
+public class HSVMaskRange {
+    private Scalar lower;
+    private Scalar upper;
+    private boolean inverted;
 
-    public static void resetToDefaults() {
-        cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-        tableColor = Color.GREEN;
-        ballColor = Color.RED;
+    public Scalar getLower() {
+        return lower;
+    }
+
+    public Scalar getUpper() {
+        return upper;
+    }
+
+    public boolean isInverted() {
+        return inverted;
+    }
+
+    public void fromIntColor(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        int hue = (int) (hsv[0] / 2);
+        if (hsv[0] / 2 < 10 || hsv[0] / 2 > 170) {
+            if (hsv[0] / 2 < 1)
+                hue = (int) (hsv[0] / 2 + 90);
+            else
+                hue = (int) (hsv[0] / 2 - 90);
+            this.inverted = true;
+        }
+
+        int saturationLow = (int) (hsv[1] * 255) - 50;
+        if (saturationLow < 0)
+            saturationLow = 0;
+        int saturationHigh = (int) (hsv[1] * 255) + 50;
+        if (saturationHigh > 255)
+            saturationHigh = 255;
+
+        int valueLow = (int) (hsv[2] * 255) - 50;
+        if (valueLow < 0)
+            valueLow = 0;
+        int valueHigh = (int) (hsv[2] * 255) + 50;
+        if (valueHigh > 255)
+            valueHigh = 255;
+
+        lower = new Scalar(hue - 10, saturationLow, valueLow);
+        upper = new Scalar(hue + 10, saturationHigh, valueHigh);
     }
 }
