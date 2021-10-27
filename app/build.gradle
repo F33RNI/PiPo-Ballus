@@ -41,18 +41,4 @@ dependencies {
     implementation 'com.github.bikcrum:CircularRangeSlider-Android:1.0'
 
     implementation project(path: ':opencv')
-
-    implementation 'org.jcodec:jcodec:0.2.5'
-    implementation (group: 'org.bytedeco', name: 'javacv', version: '1.5.5'){
-        exclude group: 'org.bytedeco', module: 'opencv'
-    }
-    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.13-1.5.5', classifier: 'android-arm'
-    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.13-1.5.5', classifier: 'android-arm64'
-    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.13-1.5.5', classifier: 'android-x86_64'
-    implementation group: 'org.bytedeco', name: 'openblas', version: '0.3.13-1.5.5', classifier: 'android-x86'
-    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.2-1.5.5', classifier: 'android-arm'
-    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.2-1.5.5', classifier: 'android-arm64'
-    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.2-1.5.5', classifier: 'android-x86_64'
-    implementation group: 'org.bytedeco', name: 'ffmpeg', version: '4.3.2-1.5.5', classifier: 'android-x86'
-    implementation 'com.android.support:multidex:1.0.3'
 }
