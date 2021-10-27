@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.25625" />
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/drawable/bg_circle.xml" value="0.25" />
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/layout/activity_color_picker.xml" value="0.33" />
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/layout/activity_home.xml" value="0.22760416666666666" />
@@ -10,6 +11,7 @@
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/layout/activity_settings.xml" value="0.25" />
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/layout/spinner_layout.xml" value="0.22760416666666666" />
         <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/menu/navigation_items.xml" value="0.20520833333333333" />
+        <entry key="..\:/Users/Frey/AndroidStudioProjects/PiPo-Ballus/PiPo-Ballus/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.25625" />
       </map>
     </option>
   </component>

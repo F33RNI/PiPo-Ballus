@@ -48,6 +48,10 @@ import org.opencv.imgproc.Imgproc;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This class provides the main algorithm for this application.
+ * Namely, it calculates the position of the ball on the table using computer vision
+ */
 public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2 {
     private final String TAG = this.getClass().getName();
 
@@ -65,6 +69,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private Scalar redColor, singleWhiteColor;
 
     private boolean scaled;
+    private boolean initialized;
     private int displayOrientation;
 
     OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase, Context context) {
@@ -72,6 +77,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         this.context = context;
 
         this.scaled = false;
+        this.initialized = false;
     }
 
     public CameraBridgeViewBase getCameraBridgeViewBase() {
@@ -79,6 +85,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         return cameraBridgeViewBase;
     }
 
+    /**
+     * Initializes the components of the class.
+     * NOTE: Make sure the method is called no more than once to prevent memory leaks
+     */
     public void initView() {
         // Initialize CameraBridgeViewBase object
         cameraBridgeViewBase.setCvCameraViewListener(this);
@@ -163,6 +173,16 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
         // Clear scaled flag
         scaled = false;
+
+        // Set initialized flag
+        initialized = true;
+    }
+
+    /**
+     * @return true if initView() was called
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     @Override
@@ -190,13 +210,19 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             // Rotate frame on different orientations
             if (displayOrientation == Surface.ROTATION_0) {
                 Core.transpose(inputRGBA, matRGBAt);
-                Core.flip(matRGBAt, inputRGBA, 1);
+                if (SettingsContainer.cameraID == CameraBridgeViewBase.CAMERA_ID_FRONT)
+                    Core.flip(matRGBAt, inputRGBA, 0);
+                else
+                    Core.flip(matRGBAt, inputRGBA, 1);
             } else if (displayOrientation == Surface.ROTATION_270) {
                 Core.flip(inputRGBA, inputRGBA, 0);
                 Core.flip(inputRGBA, inputRGBA, 1);
             } else if (displayOrientation == Surface.ROTATION_180) {
                 Core.transpose(inputRGBA, matRGBAt);
-                Core.flip(inputRGBA, inputRGBA, 0);
+                if (SettingsContainer.cameraID == CameraBridgeViewBase.CAMERA_ID_FRONT)
+                    Core.flip(matRGBAt, inputRGBA, 1);
+                else
+                    Core.flip(matRGBAt, inputRGBA, 0);
             }
 
             // Clone object for debug frame
@@ -280,21 +306,22 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                     Imgproc.rectangle(outputRGBA, tableBoundingRect.tl(),
                             tableBoundingRect.br(), tableRectColor, 2);
 
+                    // Draw table's center
+                    Imgproc.circle(outputRGBA, new Point(tableCenterX, tableCenterY), 5,
+                            tableMarksColor, 1);
+
                     // Calculate frame reference points
-                    int pX = (int) tableBoundingRect.tl().x + tableCircleR;
                     int pY = (int) tableBoundingRect.tl().y;
-                    int rX = (int) tableBoundingRect.tl().x + tableCircleR
-                            - (int) (tableCircleR / 2 * Math.sqrt(3.));
+                    int rX = tableCenterX - (int) (tableCircleR / 2 * Math.sqrt(3.));
                     int rY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
-                    int qX = (int) tableBoundingRect.tl().x + tableCircleR
-                            + (int) (tableCircleR / 2 * Math.sqrt(3.));
+                    int qX = tableCenterX + (int) (tableCircleR / 2 * Math.sqrt(3.));
                     int qY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
 
                     // Draw reference circles, text and lines
-                    Imgproc.line(outputRGBA, new Point(pX, pY),
-                            new Point(pX, pY + (int) (tableCircleR / 4)), tableMarksColor, 1);
-                    Imgproc.circle(outputRGBA, new Point(pX, pY), 10, tableMarksColor, 1);
-                    Imgproc.putText(outputRGBA, "P", new Point(pX - 5, pY + 5),
+                    Imgproc.line(outputRGBA, new Point(tableCenterX, pY),
+                            new Point(tableCenterX, pY + (int) (tableCircleR / 4)), tableMarksColor, 1);
+                    Imgproc.circle(outputRGBA, new Point(tableCenterX, pY), 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "P", new Point(tableCenterX - 5, pY + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
                     Imgproc.circle(outputRGBA, new Point(qX, qY), 10, tableMarksColor, 1);
                     Imgproc.putText(outputRGBA, "Q", new Point(qX - 5, qY + 5),
@@ -338,7 +365,8 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                         }
 
                         // Check if correct size found
-                        if (ballContourIndex > 0) {
+                        if (ballContourIndex >= 0) {
+                            // Find ball position
                             MatOfPoint2f ballContour = new MatOfPoint2f();
                             ballContours.get(ballContourIndex).convertTo(ballContour,
                                     CvType.CV_32F);
@@ -346,8 +374,17 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             float[] radius = new float[1];
                             Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
 
-                            Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], ballColor, 2);
+                            int ballVSTableX = map((int) (ballCenter.x - tableCenterX), 0,
+                                    tableBoundingRect.width, 1000, 2000);
+                            int ballVSTableY = map((int) (ballCenter.y - tableCenterY), 0,
+                                    tableBoundingRect.height, 1000, 2000);
 
+                            if (ballVSTableX >= 1000 && ballVSTableX <= 2000
+                                    && ballVSTableY >= 1000 && ballVSTableY <= 2000) {
+                                Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], ballColor, 2);
+                            } else
+                                Imgproc.putText(outputRGBA, "Wrong ball position!", new Point(50, 50),
+                                        Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
                         } else
                             Imgproc.putText(outputRGBA, "Wrong ball size!", new Point(50, 50),
                                     Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
@@ -360,12 +397,6 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             } else
                 Imgproc.putText(outputRGBA, "Table not found!", new Point(50, 50),
                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
-
-
-            //Imgproc.cvtColor(maskTableCircle, outputRGBA, Imgproc.COLOR_GRAY2RGBA, 4);
-
-            //Imgproc.cvtColor(matBGRInverted, outputRGBA, Imgproc.COLOR_BGR2RGBA, 4);
-
 
             // Resize to original size
             Imgproc.resize(outputRGBA, outputRGBA, inputFrame.rgba().size());
@@ -387,6 +418,26 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             Log.e(TAG, "Error processing frame!", e);
         }
 
+        // Return raw frame if error occurs
         return inputFrame.rgba();
+    }
+
+    /**
+     * Re-maps a number from one range to another.
+     * That is, a value of fromLow would get mapped to toLow, a value of fromHigh to toHigh,
+     * values in-between to values in-between, etc.
+     *
+     * This function is from Arduino
+     * https://www.arduino.cc/reference/en/language/functions/math/map/
+     *
+     * @param x the number to map
+     * @param in_min the lower bound of the value’s current range
+     * @param in_max the upper bound of the value’s current range
+     * @param out_min the lower bound of the value’s target range
+     * @param out_max the upper bound of the value’s target range
+     * @return the mapped value
+     */
+    private int map(int x, int in_min, int in_max, int out_min, int out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 }

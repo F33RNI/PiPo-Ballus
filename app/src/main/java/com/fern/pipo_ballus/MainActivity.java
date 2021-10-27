@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private OpenCVHandler openCVHandler;
 
     /**
-     * Checks if OpenCV library is loaded
+     * Checks if OpenCV library is loaded and asks for permissions
      */
     private final BaseLoaderCallback baseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
 
         // Enable OpenCV view
-        if (openCVHandler != null && openCVHandler.getCameraBridgeViewBase() != null)
+        if (openCVHandler != null && openCVHandler.isInitialized())
             openCVHandler.getCameraBridgeViewBase().enableView();
     }
 
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
 
         // Disable OpenCV view
-        if (openCVHandler != null && openCVHandler.getCameraBridgeViewBase() != null)
+        if (openCVHandler != null && openCVHandler.isInitialized())
             openCVHandler.getCameraBridgeViewBase().disableView();
     }
 
@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
         // Disable OpenCV view
-        if (openCVHandler != null && openCVHandler.getCameraBridgeViewBase() != null)
+        if (openCVHandler != null && openCVHandler.isInitialized())
             openCVHandler.getCameraBridgeViewBase().disableView();
     }
 
@@ -211,13 +211,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Initializes OpenCVHandler and data communication
+     */
     private void initModules() {
         openCVHandler.initView();
-
-        Toast.makeText(this, "Here will be the initialization of modules",
-                Toast.LENGTH_LONG).show();
     }
-
-
 }

@@ -28,8 +28,6 @@
 
 package com.fern.pipo_ballus;
 
-import android.graphics.Color;
-
 import org.opencv.android.CameraBridgeViewBase;
 
 /**
@@ -37,9 +35,9 @@ import org.opencv.android.CameraBridgeViewBase;
  */
 public class SettingsContainer {
     public static int cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-    public static int tableColorLower = 0xff00f000;
-    public static int tableColorUpper = 0xff00ff00;
-    public static int ballColorLower = 0xfff00000;
-    public static int ballColorUpper = 0xffff0000;
-    public static int hueRange = 20;
+    public static int tableColorLower = 0xff1e3319;
+    public static int tableColorUpper = 0xff00ffd5;
+    public static int ballColorLower = 0xff4d323f;
+    public static int ballColorUpper = 0xffff6a00;
+    public static double positionFilter = 0.4;
 }

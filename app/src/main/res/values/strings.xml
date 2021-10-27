@@ -9,4 +9,5 @@
     <string name="camera_">Camera:</string>
     <string name="table_color_range">Table color range:</string>
     <string name="ball_color_range">Ball color range:</string>
+    <string name="camera_settings">Camera settings</string>
 </resources>

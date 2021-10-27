@@ -29,7 +29,7 @@
 package com.fern.pipo_ballus;
 
 /**
- * This interface is used to transmit a color signal from a ColorPickerDialog class
+ * This interface is used to transmit a color range signal from a ColorPickerDialog class
  */
 public interface ColorPickerListener {
     void colorSelected(HSVColor lower, HSVColor upper);

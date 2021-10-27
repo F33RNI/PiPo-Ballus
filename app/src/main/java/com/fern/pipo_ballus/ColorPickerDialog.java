@@ -43,8 +43,8 @@ import com.bikcrum.circularrangeslider.CircularRangeSlider;
 import com.google.android.material.slider.RangeSlider;
 
 /**
- * This class is a color picker dialog with two buttons (save and cancel)
- * TODO: Optimize dialog size
+ * This class is a color picker dialog which provides a selection of a range of colors
+ * (in HSV format) for use in OpenCV
  */
 public class ColorPickerDialog extends Dialog {
     private ImageView previewLower, previewUpper;
@@ -57,16 +57,19 @@ public class ColorPickerDialog extends Dialog {
 
     private ColorPickerListener colorPickerListener;
 
-    public ColorPickerDialog(@NonNull Context context, HSVColor startColorLower,
+    public ColorPickerDialog(@NonNull Context context,
+                             HSVColor startColorLower,
                              HSVColor startColorUpper) {
         super(context);
-
         this.colorLower = startColorLower;
         this.colorUpper = startColorUpper;
-
         this.argbEvaluator = new ArgbEvaluator();
     }
 
+    /**
+     * Sets ColorPickerListener interface
+     * @param colorPickerListener ColorPickerListener interface with HSVColor type
+     */
     public void setColorPickerListener(ColorPickerListener colorPickerListener) {
         this.colorPickerListener = colorPickerListener;
     }
@@ -162,6 +165,9 @@ public class ColorPickerDialog extends Dialog {
         });
     }
 
+    /**
+     * Updates elements on activity
+     */
     private void updateView() {
         // Get integer color values
         int colorLowerInt = colorLower.getIntColor();

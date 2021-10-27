@@ -96,10 +96,10 @@ public class SettingsActivity extends AppCompatActivity {
         findViewById(R.id.settingsResetBtn).setOnClickListener(view -> {
             // Reset settings to default
             cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
-            tableColorLower = 0xff00f000;
-            tableColorUpper = 0xff00ff00;
-            ballColorLower = 0xfff00000;
-            ballColorUpper = 0xffff0000;
+            tableColorLower = 0xff1e3319;
+            tableColorUpper = 0xff00ffd5;
+            ballColorLower = 0xff4d323f;
+            ballColorUpper = 0xffff6a00;
 
             // Update view
             updateView();
@@ -168,6 +168,9 @@ public class SettingsActivity extends AppCompatActivity {
         updateView();
     }
 
+    /**
+     * Updates activity elements with local settings variables
+     */
     private void updateView() {
         // Camera index
         cameraIDSpinner.setAdapter(new ArrayAdapter<>(this,
@@ -184,16 +187,24 @@ public class SettingsActivity extends AppCompatActivity {
                 tableColorUpper);
         settingsTableColor.setBackgroundColor(tableMidColor);
         settingsTableColor.setTextColor(HSVColor.getContrastColor(tableMidColor));
-        settingsTableColor.setText(String.format("#%06X", (0xFFFFFF & tableMidColor)));
+        String tableColorRange = String.format("#%06X", (0xFFFFFF & tableColorLower))
+                + " - " + String.format("#%06X", (0xFFFFFF & tableColorUpper));
+        settingsTableColor.setText(tableColorRange);
 
         // Ball color
         int ballMidColor = (int) argbEvaluator.evaluate(0.5f, ballColorLower,
                 ballColorUpper);
         settingsBallColor.setBackgroundColor(ballMidColor);
         settingsBallColor.setTextColor(HSVColor.getContrastColor(ballMidColor));
-        settingsBallColor.setText(String.format("#%06X", (0xFFFFFF & ballMidColor)));
+        String ballColorRange = String.format("#%06X", (0xFFFFFF & ballColorLower))
+                + " - " + String.format("#%06X", (0xFFFFFF & ballColorUpper));
+        settingsBallColor.setText(ballColorRange);
     }
 
+    /**
+     * Assigns local settings to a SettingsContainer class and calls SettingsHandler.saveSettings()
+     * to save the settings to a JSON file
+     */
     private void saveSettings() {
         try {
             // Copy settings from local variables
