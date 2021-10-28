@@ -374,10 +374,12 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             float[] radius = new float[1];
                             Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
 
-                            int ballVSTableX = map((int) (ballCenter.x - tableCenterX), 0,
-                                    tableBoundingRect.width, 1000, 2000);
-                            int ballVSTableY = map((int) (ballCenter.y - tableCenterY), 0,
-                                    tableBoundingRect.height, 1000, 2000);
+                            int ballVSTableX = map((int) (ballCenter.x - tableCenterX),
+                                    -tableBoundingRect.width / 2,
+                                    tableBoundingRect.width / 2, 1000, 2000);
+                            int ballVSTableY = map((int) (ballCenter.y - tableCenterY),
+                                    -tableBoundingRect.height / 2,
+                                    tableBoundingRect.height / 2, 1000, 2000);
 
                             if (ballVSTableX >= 1000 && ballVSTableX <= 2000
                                     && ballVSTableY >= 1000 && ballVSTableY <= 2000) {
