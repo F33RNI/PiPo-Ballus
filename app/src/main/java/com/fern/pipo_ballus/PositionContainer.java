@@ -35,11 +35,13 @@ package com.fern.pipo_ballus;
 public class PositionContainer {
     public double ballVSTableX, ballVSTableY;
     public double ballSetpointX, ballSetpointY;
+    public boolean ballDetected;
 
     PositionContainer() {
         ballVSTableX = 1500;
         ballVSTableY = 1500;
         ballSetpointX = 1500;
         ballSetpointY = 1500;
+        ballDetected = false;
     }
 }

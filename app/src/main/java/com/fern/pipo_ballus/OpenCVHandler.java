@@ -55,6 +55,10 @@ import java.util.List;
 public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2 {
     private final String TAG = this.getClass().getName();
 
+    private final static int ALLOWED_LOST_FRAMES = 5;
+
+    private final PositionContainer positionContainer;
+
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Context context;
 
@@ -65,16 +69,19 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private Scalar colorTableLower, colorTableUpper;
     private Scalar colorBallLower, colorBallUpper;
     private boolean tableRangeInverted, ballRangeInverted;
-    private Scalar tableRectColor, tableMarksColor, tableTextColor, ballColor;
+    private Scalar tableRectColor, tableMarksColor, tableTextColor, ballColor, ballSetpointColor;
     private Scalar redColor, singleWhiteColor;
 
     private boolean scaled;
     private boolean initialized;
     private int displayOrientation;
+    private int lostFrames;
 
     OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase, Context context) {
         this.cameraBridgeViewBase = cameraBridgeViewBase;
         this.context = context;
+
+        this.positionContainer = new PositionContainer();
 
         this.scaled = false;
         this.initialized = false;
@@ -168,6 +175,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         tableMarksColor = new Scalar(255, 0, 255);
         tableTextColor = new Scalar(255, 255, 0);
         ballColor = new Scalar(255, 255, 0);
+        ballSetpointColor = new Scalar(0, 255, 0);
         redColor = new Scalar(255, 0, 0);
         singleWhiteColor = new Scalar(255);
 
@@ -330,6 +338,18 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                     Imgproc.putText(outputRGBA, "R", new Point(rX - 5, rY + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
 
+                    // Draw ball's setpoint
+                    Imgproc.circle(outputRGBA,
+                            new Point(map((int) positionContainer.ballSetpointX,
+                                    1000, 2000,
+                                    tableCenterX - tableBoundingRect.width / 2,
+                                    tableCenterX + tableBoundingRect.width / 2),
+                                    map((int) positionContainer.ballSetpointY,
+                                            1000, 2000,
+                                            tableCenterY - tableBoundingRect.height / 2,
+                                            tableCenterY + tableBoundingRect.height / 2)),
+                            20, ballSetpointColor, 2);
+
                     // Initialize maskTableCircle
                     Mat maskTableCircle = Mat.zeros(maskTable.rows(), maskTable.cols(), maskTable.type());
 
@@ -374,6 +394,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             float[] radius = new float[1];
                             Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
 
+                            // Calculate ball position relative to table's center (1000-2000)
                             int ballVSTableX = map((int) (ballCenter.x - tableCenterX),
                                     -tableBoundingRect.width / 2,
                                     tableBoundingRect.width / 2, 1000, 2000);
@@ -381,9 +402,48 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                                     -tableBoundingRect.height / 2,
                                     tableBoundingRect.height / 2, 1000, 2000);
 
+                            // Check ball position
                             if (ballVSTableX >= 1000 && ballVSTableX <= 2000
                                     && ballVSTableY >= 1000 && ballVSTableY <= 2000) {
-                                Imgproc.circle(outputRGBA, ballCenter, (int) radius[0], ballColor, 2);
+
+                                // Set new coordinates without filtering
+                                // if before that the ball was not found
+                                if (!positionContainer.ballDetected) {
+                                    positionContainer.ballVSTableX = ballVSTableX;
+                                    positionContainer.ballVSTableY = ballVSTableY;
+                                    positionContainer.ballDetected = true;
+                                }
+
+                                // Set new filtered coordinates
+                                else {
+                                    positionContainer.ballVSTableX =
+                                            positionContainer.ballVSTableX
+                                                    * SettingsContainer.positionFilter +
+                                                    (double) ballVSTableX
+                                                            * (1 - SettingsContainer.
+                                                            positionFilter);
+                                    positionContainer.ballVSTableY =
+                                            positionContainer.ballVSTableY
+                                                    * SettingsContainer.positionFilter +
+                                                    (double) ballVSTableY
+                                                            * (1 - SettingsContainer.
+                                                            positionFilter);
+                                }
+
+                                // Update lost counter
+                                lostFrames = ALLOWED_LOST_FRAMES;
+
+                                // Draw ball's position
+                                Imgproc.circle(outputRGBA,
+                                        new Point(map((int) positionContainer.ballVSTableX,
+                                                1000, 2000,
+                                                tableCenterX - tableBoundingRect.width / 2,
+                                                tableCenterX + tableBoundingRect.width / 2),
+                                                map((int) positionContainer.ballVSTableY,
+                                                        1000, 2000,
+                                                        tableCenterY - tableBoundingRect.height / 2,
+                                                        tableCenterY + tableBoundingRect.height / 2)),
+                                        (int) radius[0], ballColor, 2);
                             } else
                                 Imgproc.putText(outputRGBA, "Wrong ball position!", new Point(50, 50),
                                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
@@ -399,6 +459,14 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             } else
                 Imgproc.putText(outputRGBA, "Table not found!", new Point(50, 50),
                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
+
+            // Decrement lostFrames counter every frame
+            if (lostFrames > 0)
+                lostFrames--;
+
+            // Clear ballDetected flag if more frames lost than threshold
+            else
+                positionContainer.ballDetected = false;
 
             // Resize to original size
             Imgproc.resize(outputRGBA, outputRGBA, inputFrame.rgba().size());
@@ -432,14 +500,14 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
      * This function is from Arduino
      * https://www.arduino.cc/reference/en/language/functions/math/map/
      *
-     * @param x the number to map
+     * @param value the number to map
      * @param in_min the lower bound of the value’s current range
      * @param in_max the upper bound of the value’s current range
      * @param out_min the lower bound of the value’s target range
      * @param out_max the upper bound of the value’s target range
      * @return the mapped value
      */
-    private int map(int x, int in_min, int in_max, int out_min, int out_max) {
-        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    private int map(int value, int in_min, int in_max, int out_min, int out_max) {
+        return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 }
