@@ -123,6 +123,12 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
+        // Add actions button click
+        findViewById(R.id.actionsBtn).setOnClickListener(view -> {
+            ActionsDialog actionsDialog = new ActionsDialog(MainActivity.this);
+            actionsDialog.show();
+        });
+
         // Initialize OpenCVHandler class
         openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
                 getApplicationContext());

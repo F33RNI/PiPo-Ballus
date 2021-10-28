@@ -10,4 +10,9 @@
     <string name="table_color_range">Table color range:</string>
     <string name="ball_color_range">Ball color range:</string>
     <string name="camera_settings">Camera settings</string>
+    <string name="actions">Actions</string>
+    <string name="clear">Clear</string>
+    <string name="rotate_cw">Rotate CW</string>
+    <string name="rotate_ccw">Rotate CCW</string>
+    <string name="jump">Jump</string>
 </resources>
