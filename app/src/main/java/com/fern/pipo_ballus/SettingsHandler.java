@@ -40,6 +40,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 
+/**
+ * This class provides reading / saving of settings (the SettingsContainer class) to a JSON file
+ */
 public class SettingsHandler {
     private final static String TAG = SettingsHandler.class.getName();
     
