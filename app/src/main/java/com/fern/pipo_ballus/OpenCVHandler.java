@@ -28,10 +28,9 @@
 
 package com.fern.pipo_ballus;
 
-import android.content.Context;
+import android.app.Activity;
 import android.util.Log;
 import android.view.Surface;
-import android.view.WindowManager;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Core;
@@ -41,8 +40,8 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
@@ -60,30 +59,35 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final PositionContainer positionContainer;
 
     private final CameraBridgeViewBase cameraBridgeViewBase;
-    private final Context context;
+    private final Activity activity;
+
+    private PositionListener positionListener;
 
     private Mat inputRGBA, outputRGBA, matRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
     private Mat matHue, matSaturation, matValue;
     private List<Mat> channels;
-    private Mat maskTable, maskBall, kernel, hierarchy;
+    private Mat maskTable, maskBall, hierarchy;
     private Scalar colorTableLower, colorTableUpper;
     private Scalar colorBallLower, colorBallUpper;
     private boolean tableRangeInverted, ballRangeInverted;
-    private Scalar tableRectColor, tableMarksColor, tableTextColor, ballColor, ballSetpointColor;
-    private Scalar redColor, singleWhiteColor;
+    private Scalar tableEllipseColor, tableMarksColor, tableTextColor, ballColor, ballSetpointColor;
+    private Scalar redColor, orangeColor, singleWhiteColor;
 
-    private boolean scaled;
+    private int rotationLast;
     private boolean initialized;
-    private int displayOrientation;
     private int lostFrames;
 
-    OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase, Context context) {
+    public void setPositionListener(PositionListener positionListener) {
+        this.positionListener = positionListener;
+    }
+
+    OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase,
+                  Activity activity) {
         this.cameraBridgeViewBase = cameraBridgeViewBase;
-        this.context = context;
+        this.activity = activity;
 
         this.positionContainer = new PositionContainer();
 
-        this.scaled = false;
         this.initialized = false;
     }
 
@@ -104,6 +108,8 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         cameraBridgeViewBase.setMaxFrameSize(640, 480);
 
         // Initialize variables
+        rotationLast = -1;
+
         inputRGBA = new Mat();
         outputRGBA = new Mat();
         matRGBAt = new Mat();
@@ -119,7 +125,6 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
         maskTable = new Mat();
         maskBall = new Mat();
-        kernel = Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE, new Size(5, 5));
         hierarchy = new Mat();
 
         // Initialize HSVColor class for color conversion
@@ -171,16 +176,15 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         }
 
         // Initialize basic colors
-        tableRectColor = new Scalar(0, 255, 255);
+        tableEllipseColor = new Scalar(0, 255, 255);
         tableMarksColor = new Scalar(255, 0, 255);
         tableTextColor = new Scalar(255, 255, 0);
         ballColor = new Scalar(255, 255, 0);
         ballSetpointColor = new Scalar(0, 255, 0);
-        redColor = new Scalar(255, 0, 0);
-        singleWhiteColor = new Scalar(255);
 
-        // Clear scaled flag
-        scaled = false;
+        redColor = new Scalar(255, 0, 0);
+        orangeColor = new Scalar(255, 63, 0);
+        singleWhiteColor = new Scalar(255);
 
         // Set initialized flag
         initialized = true;
@@ -195,37 +199,36 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
     @Override
     public void onCameraViewStarted(int width, int height) {
-        scaled = false;
+
     }
 
     @Override
     public void onCameraViewStopped() {
-        scaled = false;
+
     }
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         try {
+            long timeStart = System.currentTimeMillis();
+
             // Read input RGBA image
             inputRGBA = inputFrame.rgba();
 
-            // Get new screen orientation
-            if (!scaled)
-                displayOrientation = ((WindowManager)
-                        context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                        .getOrientation();
+            // Get current screen rotation angle
+            int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
 
             // Rotate frame on different orientations
-            if (displayOrientation == Surface.ROTATION_0) {
+            if (rotation == Surface.ROTATION_0) {
                 Core.transpose(inputRGBA, matRGBAt);
                 if (SettingsContainer.cameraID == CameraBridgeViewBase.CAMERA_ID_FRONT)
                     Core.flip(matRGBAt, inputRGBA, 0);
                 else
                     Core.flip(matRGBAt, inputRGBA, 1);
-            } else if (displayOrientation == Surface.ROTATION_270) {
+            } else if (rotation == Surface.ROTATION_270) {
                 Core.flip(inputRGBA, inputRGBA, 0);
                 Core.flip(inputRGBA, inputRGBA, 1);
-            } else if (displayOrientation == Surface.ROTATION_180) {
+            } else if (rotation == Surface.ROTATION_180) {
                 Core.transpose(inputRGBA, matRGBAt);
                 if (SettingsContainer.cameraID == CameraBridgeViewBase.CAMERA_ID_FRONT)
                     Core.flip(matRGBAt, inputRGBA, 1);
@@ -241,7 +244,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
             // Invert BGR
             Mat invertColorMatrix = new Mat(matBGR.rows(), matBGR.cols(), matBGR.type(),
-                    new Scalar(255,255,255));
+                    new Scalar(255, 255, 255));
             Core.subtract(invertColorMatrix, matBGR, matBGRInverted);
             invertColorMatrix.release();
 
@@ -266,10 +269,6 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                 Core.inRange(matHSVInverted, colorTableLower, colorTableUpper, maskTable);
             else
                 Core.inRange(matHSV, colorTableLower, colorTableUpper, maskTable);
-
-            // Filter table mask
-            Imgproc.erode(maskTable, maskTable, kernel);
-            Imgproc.dilate(maskTable, maskTable, kernel);
 
             // Get ball mask
             if (ballRangeInverted)
@@ -298,67 +297,72 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                 // Check table's area
                 if (maxContourArea > 1000) {
 
-                    // Extract table's bounding rectangle
+                    // Extract table's bounding rectangle and ellipse
                     Rect tableBoundingRect = Imgproc.boundingRect(contours.get(tableContourIndex));
+                    RotatedRect tableRotatedRect = Imgproc.fitEllipse(
+                            new MatOfPoint2f(contours.get(tableContourIndex).toArray()));
+
+                    // Reduce size of the table's ellipse to remove border
+                    tableRotatedRect.size.width -= 10;
+                    tableRotatedRect.size.height -= 10;
 
                     // Calculate table's radius
                     int tableCircleR = (tableBoundingRect.height + tableBoundingRect.width) / 4;
 
-                    // Calculate table's center
-                    int tableCenterX = (int) ((tableBoundingRect.tl().x
-                            + tableBoundingRect.br().x) / 2);
-                    int tableCenterY = (int) ((tableBoundingRect.tl().y
-                            + tableBoundingRect.br().y) / 2);
-
-                    // Draw table's rectangle
-                    Imgproc.rectangle(outputRGBA, tableBoundingRect.tl(),
-                            tableBoundingRect.br(), tableRectColor, 2);
+                    // Draw table's ellipse
+                    Imgproc.ellipse(outputRGBA, tableRotatedRect, tableEllipseColor, 2);
 
                     // Draw table's center
-                    Imgproc.circle(outputRGBA, new Point(tableCenterX, tableCenterY), 5,
+                    Imgproc.circle(outputRGBA, tableRotatedRect.center, 5,
                             tableMarksColor, 1);
 
                     // Calculate frame reference points
-                    int pY = (int) tableBoundingRect.tl().y;
-                    int rX = tableCenterX - (int) (tableCircleR / 2 * Math.sqrt(3.));
-                    int rY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
-                    int qX = tableCenterX + (int) (tableCircleR / 2 * Math.sqrt(3.));
-                    int qY = (int) tableBoundingRect.tl().y + tableCircleR + tableCircleR / 2;
+                    int pqXK = (int) (tableBoundingRect.width / 4 * Math.sqrt(3.));
+                    int pqYK = tableBoundingRect.height / 4;
+                    Point p = new Point(tableRotatedRect.center.x,
+                            (int) (tableRotatedRect.center.y - tableBoundingRect.height / 2));
+                    Point q = new Point(tableRotatedRect.center.x + pqXK,
+                            tableRotatedRect.center.y + pqYK);
+                    Point r = new Point(tableRotatedRect.center.x - pqXK,
+                            tableRotatedRect.center.y + pqYK);
 
-                    // Draw reference circles, text and lines
-                    Imgproc.line(outputRGBA, new Point(tableCenterX, pY),
-                            new Point(tableCenterX, pY + (int) (tableCircleR / 4)), tableMarksColor, 1);
-                    Imgproc.circle(outputRGBA, new Point(tableCenterX, pY), 10, tableMarksColor, 1);
-                    Imgproc.putText(outputRGBA, "P", new Point(tableCenterX - 5, pY + 5),
+                    // Draw reference marks
+                    Imgproc.line(outputRGBA, p,
+                            new Point(p.x, (int) (p.y + tableCircleR / 4)),
+                            tableMarksColor, 1);
+                    Imgproc.circle(outputRGBA, p, 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "P", new Point(p.x - 5, p.y + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
-                    Imgproc.circle(outputRGBA, new Point(qX, qY), 10, tableMarksColor, 1);
-                    Imgproc.putText(outputRGBA, "Q", new Point(qX - 5, qY + 5),
+                    Imgproc.circle(outputRGBA, q, 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "Q", new Point(q.x - 5, q.y + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
-                    Imgproc.circle(outputRGBA, new Point(rX, rY), 10, tableMarksColor, 1);
-                    Imgproc.putText(outputRGBA, "R", new Point(rX - 5, rY + 5),
+                    Imgproc.circle(outputRGBA, r, 10, tableMarksColor, 1);
+                    Imgproc.putText(outputRGBA, "R", new Point(r.x - 5, r.y + 5),
                             Core.FONT_HERSHEY_PLAIN, 1, tableTextColor, 1);
 
                     // Draw ball's setpoint
                     Imgproc.circle(outputRGBA,
                             new Point(map((int) positionContainer.ballSetpointX,
                                     1000, 2000,
-                                    tableCenterX - tableBoundingRect.width / 2,
-                                    tableCenterX + tableBoundingRect.width / 2),
+                                    (int) (tableRotatedRect.center.x -
+                                            tableBoundingRect.width / 2),
+                                    (int) (tableRotatedRect.center.x +
+                                            tableBoundingRect.width / 2)),
                                     map((int) positionContainer.ballSetpointY,
                                             1000, 2000,
-                                            tableCenterY - tableBoundingRect.height / 2,
-                                            tableCenterY + tableBoundingRect.height / 2)),
+                                            (int) (tableRotatedRect.center.y
+                                                    - tableBoundingRect.height / 2),
+                                            (int) (tableRotatedRect.center.y
+                                                    + tableBoundingRect.height / 2))),
                             20, ballSetpointColor, 2);
 
                     // Initialize maskTableCircle
-                    Mat maskTableCircle = Mat.zeros(maskTable.rows(), maskTable.cols(), maskTable.type());
+                    Mat maskTableCircle =
+                            Mat.zeros(maskTable.rows(), maskTable.cols(), maskTable.type());
 
                     // Create circle mask of the table
-                    Imgproc.circle(maskTableCircle, new Point(tableCenterX, tableCenterY),
-                            tableCircleR, singleWhiteColor, -1);
-
-                    // Erode mask to remove edges
-                    Imgproc.erode(maskTableCircle, maskTableCircle, kernel);
+                    Imgproc.ellipse(maskTableCircle, tableRotatedRect,
+                            singleWhiteColor, -1);
 
                     // Calculate ball mask
                     Core.bitwise_and(maskBall, maskTableCircle, maskBall);
@@ -395,10 +399,10 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             Imgproc.minEnclosingCircle(ballContour, ballCenter, radius);
 
                             // Calculate ball position relative to table's center (1000-2000)
-                            int ballVSTableX = map((int) (ballCenter.x - tableCenterX),
+                            int ballVSTableX = map((int) (ballCenter.x - tableRotatedRect.center.x),
                                     -tableBoundingRect.width / 2,
                                     tableBoundingRect.width / 2, 1000, 2000);
-                            int ballVSTableY = map((int) (ballCenter.y - tableCenterY),
+                            int ballVSTableY = map((int) (ballCenter.y - tableRotatedRect.center.y),
                                     -tableBoundingRect.height / 2,
                                     tableBoundingRect.height / 2, 1000, 2000);
 
@@ -437,50 +441,74 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                                 Imgproc.circle(outputRGBA,
                                         new Point(map((int) positionContainer.ballVSTableX,
                                                 1000, 2000,
-                                                tableCenterX - tableBoundingRect.width / 2,
-                                                tableCenterX + tableBoundingRect.width / 2),
+                                                (int) (tableRotatedRect.center.x
+                                                        - tableBoundingRect.width / 2),
+                                                (int) (tableRotatedRect.center.x
+                                                        + tableBoundingRect.width / 2)),
                                                 map((int) positionContainer.ballVSTableY,
                                                         1000, 2000,
-                                                        tableCenterY - tableBoundingRect.height / 2,
-                                                        tableCenterY + tableBoundingRect.height / 2)),
+                                                        (int) (tableRotatedRect.center.y
+                                                                - tableBoundingRect.height / 2),
+                                                        (int) (tableRotatedRect.center.y
+                                                                + tableBoundingRect.height / 2))),
                                         (int) radius[0], ballColor, 2);
                             } else
-                                Imgproc.putText(outputRGBA, "Wrong ball position!", new Point(50, 50),
+                                Imgproc.putText(outputRGBA, "Wrong ball position!", new Point(30, 50),
                                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
                         } else
-                            Imgproc.putText(outputRGBA, "Wrong ball size!", new Point(50, 50),
+                            Imgproc.putText(outputRGBA, "Wrong ball size!", new Point(30, 50),
                                     Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
                     } else
-                        Imgproc.putText(outputRGBA, "Ball not found!", new Point(50, 50),
+                        Imgproc.putText(outputRGBA, "Ball not found!", new Point(30, 50),
                                 Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
                 } else
-                    Imgproc.putText(outputRGBA, "Table too small!", new Point(50, 50),
+                    Imgproc.putText(outputRGBA, "Table too small!", new Point(30, 50),
                             Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
             } else
-                Imgproc.putText(outputRGBA, "Table not found!", new Point(50, 50),
+                Imgproc.putText(outputRGBA, "Table not found!", new Point(30, 50),
                         Core.FONT_HERSHEY_PLAIN, 2, redColor, 2);
 
             // Decrement lostFrames counter every frame
             if (lostFrames > 0)
                 lostFrames--;
 
-            // Clear ballDetected flag if more frames lost than threshold
+                // Clear ballDetected flag if more frames lost than threshold
             else
                 positionContainer.ballDetected = false;
+
+            // Send new ball's position
+            if (positionContainer.ballDetected && positionListener != null)
+                try {
+                    positionListener.newPosition(positionContainer);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error sending new position to PositionListener!", e);
+                }
+
+            // Display a message about low performance if the frame time is more than 33 ms (30 fps)
+            if (System.currentTimeMillis() - timeStart > 33)
+                Imgproc.putText(outputRGBA, "WARNING! Low performance!",
+                        new Point(30, 100),
+                        Core.FONT_HERSHEY_PLAIN, 2, orangeColor, 2);
 
             // Resize to original size
             Imgproc.resize(outputRGBA, outputRGBA, inputFrame.rgba().size());
 
-            // Set new scaled coefficient to match original aspect ratio
-            if (!scaled && (displayOrientation == Surface.ROTATION_0
-                    || displayOrientation == Surface.ROTATION_180))
-                cameraBridgeViewBase.setScaleY((float)
-                        ((inputRGBA.size().width * inputRGBA.size().width)
-                                / (inputRGBA.size().height * inputRGBA.size().height)));
+            // On rotation changed
+            if (rotation != rotationLast) {
+                // Set MAX_PRIORITY
+                Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
-            // Set scaled flag
-            if (!scaled)
-                scaled = true;
+                // Set new scaling factor
+                if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
+                    cameraBridgeViewBase.setScaleY((float)
+                            ((inputRGBA.size().width * inputRGBA.size().width)
+                                    / (inputRGBA.size().height * inputRGBA.size().height)));
+                else
+                    cameraBridgeViewBase.setScaleY(1);
+            }
+
+            // Remember new rotation
+            rotationLast = rotation;
 
             return outputRGBA;
         } catch (Exception e) {

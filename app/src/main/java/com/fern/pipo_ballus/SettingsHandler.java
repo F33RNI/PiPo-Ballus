@@ -84,6 +84,7 @@ public class SettingsHandler {
             bufferedReader.close();
             JSONObject jsonObject = new JSONObject(stringBuilder.toString());
 
+            // Parse json object to SettingsContainer variables
             SettingsContainer.cameraID = (int) jsonObject.get("camera_id");
             SettingsContainer.tableColorLower = (int) jsonObject.get("table_color_lower");
             SettingsContainer.tableColorUpper = (int) jsonObject.get("table_color_upper");

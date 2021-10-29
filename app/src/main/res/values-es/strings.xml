@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home">Inicio</string>
+    <string name="settings">Ajustes</string>
+    <string name="save">Aplicar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="camera">Cámara</string>
+    <string name="reset">Reiniciar</string>
+    <string name="camera_">Cámara:</string>
+    <string name="table_color_range">Gama de colores de la mesa:</string>
+    <string name="ball_color_range">Gama de colores de la bola:</string>
+    <string name="camera_settings">Ajustes de la cámara</string>
+    <string name="actions">Jugar</string>
+    <string name="clear">Cancelar</string>
+    <string name="rotate_cw">Rotación CW</string>
+    <string name="rotate_ccw">Rotación CCW</string>
+    <string name="jump">Salto</string>
+    <string name="select_serial_device">Seleccione el dispositivo</string>
+    <string name="refresh">Actualizar</string>
+    <string name="permissions_not_granted">Permisos no otorgados. Vuelve a intentarlo o selecciona otro dispositivo</string>
+    <string name="opencv_not_loaded">¡Error! OpenCV no cargado</string>
+    <string name="bluetooth_disabled">¡Advertencia! Bluetooth desactivado</string>
+    <string name="opened_">Abierto:</string>
+    <string name="error_opening">Error al abrir</string>
+    <string name="no_serial_device">No se seleccionó ningún dispositivo en serie</string>
+    <string name="settings_saved">Configuración guardada con éxito</string>
+    <string name="wrong_settings">¡Se han proporcionado ajustes incorrectos! Nada guardado</string>
+    <string-array name="camera_options">
+        <item>Auto</item>
+        <item>Principal</item>
+        <item>Frontal</item>
+    </string-array>
+</resources>

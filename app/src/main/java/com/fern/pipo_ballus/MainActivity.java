@@ -29,9 +29,11 @@
 package com.fern.pipo_ballus;
 
 import android.Manifest;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -49,12 +51,14 @@ import org.opencv.android.OpenCVLoader;
 public class MainActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
-    private final String[] PERMISSIONS = {
+    private static final String[] PERMISSIONS = {
             Manifest.permission.CAMERA
     };
-    private final int PERMISSION_REQUEST_CODE = 1;
+    private static final int PERMISSION_REQUEST_CODE = 1;
 
     private OpenCVHandler openCVHandler;
+    private SerialDevice serialDevice;
+    private SerialHandler serialHandler;
 
     /**
      * Checks if OpenCV library is loaded and asks for permissions
@@ -80,12 +84,11 @@ public class MainActivity extends AppCompatActivity {
             }
             else {
                 super.onManagerConnected(status);
-                Toast.makeText(MainActivity.this, "OpenCV not loaded!",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, R.string.opencv_not_loaded,
+                        Toast.LENGTH_LONG).show();
 
-                // Close the application because OpenCV library not loaded
-                finish();
-                //System.exit(0);
+                // Exit back to home screen
+                switchToHomeActivity();
             }
         }
     };
@@ -111,9 +114,7 @@ public class MainActivity extends AppCompatActivity {
         // Add bottom menu clicks
         bottomNavigationView.setOnItemSelectedListener(item -> {
             if (item.getItemId() == R.id.menuHome) {
-                startActivity(new Intent(getApplicationContext(), HomeActivity.class));
-                System.gc();
-                finish();
+                switchToHomeActivity();
             }
             else if (item.getItemId() == R.id.menuSettings) {
                 startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
@@ -129,9 +130,64 @@ public class MainActivity extends AppCompatActivity {
             actionsDialog.show();
         });
 
+        // Initialize UsbManager
+        UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
+        // Initialize BluetoothManager
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled())
+            Toast.makeText(this, R.string.bluetooth_disabled,
+                    Toast.LENGTH_SHORT).show();
+
         // Initialize OpenCVHandler class
-        openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
-                getApplicationContext());
+        openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView), this);
+
+        // Initialize SerialHandler class
+        serialDevice = new SerialDevice();
+        serialHandler = new SerialHandler(usbManager, bluetoothAdapter, serialDevice);
+
+        // Connect PositionListener to OpenCVHandler
+        openCVHandler.setPositionListener(serialHandler.getPositionListener());
+
+        // Create DevicesDialog
+        DevicesDialog devicesDialog = new DevicesDialog(this, usbManager, bluetoothAdapter);
+        devicesDialog.setDevicesListener(new DevicesListener() {
+            @Override
+            public void deviceSelected(SerialDevice serialDevice) {
+                // Copy serialDevice from dialog to MainActivity
+                MainActivity.this.serialDevice
+                        .setUsbSerialDriver(serialDevice.getUsbSerialDriver());
+                MainActivity.this.serialDevice
+                        .setBluetoothDevice(serialDevice.getBluetoothDevice());
+
+                // Open serial device
+                if (serialHandler.openDevice()) {
+                    Toast.makeText(getApplicationContext(), getString(R.string.opened_) +
+                                    serialDevice.getDeviceName(),
+                            Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.error_opening) +
+                            serialDevice.getDeviceName(), Toast.LENGTH_SHORT).show();
+
+                    // Exit back to home screen
+                    switchToHomeActivity();
+                }
+            }
+
+            @Override
+            public void canceled() {
+                // Display message about no device
+                Toast.makeText(getApplicationContext(), R.string.no_serial_device,
+                        Toast.LENGTH_LONG).show();
+
+                // Exit back to home screen
+                switchToHomeActivity();
+            }
+        });
+
+        // Create DeviceLostListener
+        serialHandler.setDeviceLostListener(() -> runOnUiThread(devicesDialog::show));
 
         // Load OpenCV library and init layout
         if (!OpenCVLoader.initDebug()) {
@@ -170,6 +226,10 @@ public class MainActivity extends AppCompatActivity {
         // Disable OpenCV view
         if (openCVHandler != null && openCVHandler.isInitialized())
             openCVHandler.getCameraBridgeViewBase().disableView();
+
+        // Close bluetooth and usb device
+        if (serialHandler != null)
+            serialHandler.closeDevice();
     }
 
     /**
@@ -208,19 +268,25 @@ public class MainActivity extends AppCompatActivity {
             initModules();
         }
         else {
-            Toast.makeText(this, "Permissions not granted!",
+            Toast.makeText(this, getString(R.string.permissions_not_granted),
                     Toast.LENGTH_LONG).show();
 
-            // Close the application because the permissions are not granted
-            finish();
-            //System.exit(0);
+            // Exit back to home screen
+            switchToHomeActivity();
         }
+    }
+    
+    private void switchToHomeActivity() {
+        startActivity(new Intent(getApplicationContext(), HomeActivity.class));
+        System.gc();
+        finish();
     }
 
     /**
      * Initializes OpenCVHandler and data communication
      */
     private void initModules() {
+        // Initialize OpenCVHandler class
         openCVHandler.initView();
     }
 }

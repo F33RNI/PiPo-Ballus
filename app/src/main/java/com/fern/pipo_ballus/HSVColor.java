@@ -37,15 +37,6 @@ public class HSVColor {
     private float hue, saturation, value;
 
     /**
-     * Initializes the current class with black color (0, 0, 0)
-     */
-    HSVColor() {
-        hue = 0;
-        saturation = 0;
-        value = 0;
-    }
-
-    /**
      *  Initializes the current class with provided color
      * @param hue hue component of color (0-360)
      * @param saturation saturation component of color (0-1)
@@ -67,16 +58,6 @@ public class HSVColor {
         this.hue = hsv[0];
         this.saturation = hsv[1];
         this.value = hsv[2];
-    }
-
-    /**
-     * Initializes the current class with provided color
-     * @param hsvColor HSVColor class to copy from
-     */
-    HSVColor(HSVColor hsvColor) {
-        this.hue = hsvColor.getHue();
-        this.saturation = hsvColor.getSaturation();
-        this.value = hsvColor.getValue();
     }
 
     /**

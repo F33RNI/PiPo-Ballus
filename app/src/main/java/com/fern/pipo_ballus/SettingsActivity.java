@@ -48,7 +48,7 @@ import org.opencv.android.CameraBridgeViewBase;
 public class SettingsActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
-    private final static String[] cameraOptions = new String[]{"Any", "Back", "Front"};
+    private String[] cameraOptions;
 
     private ArgbEvaluator argbEvaluator;
 
@@ -68,6 +68,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         // Initialize elements
+        cameraOptions = getResources().getStringArray(R.array.camera_options);
         argbEvaluator = new ArgbEvaluator();
         BottomNavigationView bottomNavigationView = findViewById(R.id.navigationView);
         cameraIDSpinner = findViewById(R.id.cameraIDSpinner);
@@ -216,10 +217,10 @@ public class SettingsActivity extends AppCompatActivity {
 
             // Save settings to file
             SettingsHandler.saveSettings(HomeActivity.settingsFile, this);
-            Toast.makeText(this, "Settings saved successfully",
+            Toast.makeText(this, R.string.settings_saved,
                     Toast.LENGTH_LONG).show();
         } catch (Exception e) {
-            Toast.makeText(this, "Wrong settings provided! Nothing saved",
+            Toast.makeText(this, R.string.wrong_settings,
                     Toast.LENGTH_LONG).show();
             Log.e(TAG, "Wrong settings provided!", e);
         }
