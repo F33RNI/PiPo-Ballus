@@ -17,7 +17,7 @@
     <string name="jump">Jump</string>
     <string name="select_serial_device">Select serial device</string>
     <string name="refresh">Refresh</string>
-    <string name="permissions_not_granted">Permissions not granted. Try again or select other device"</string>
+    <string name="permissions_not_granted">Permissions not granted. Try again</string>
     <string name="opencv_not_loaded">Error! OpenCV not loaded</string>
     <string name="bluetooth_disabled">WARNING! Bluetooth disabled</string>
     <string name="opened_">"Opened: "</string>

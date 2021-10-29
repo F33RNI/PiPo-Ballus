@@ -17,7 +17,7 @@
     <string name="jump">Salto</string>
     <string name="select_serial_device">Seleccione el dispositivo</string>
     <string name="refresh">Actualizar</string>
-    <string name="permissions_not_granted">Permisos no otorgados. Vuelve a intentarlo o selecciona otro dispositivo</string>
+    <string name="permissions_not_granted">Permisos no otorgados. Intentar otra vez</string>
     <string name="opencv_not_loaded">¡Error! OpenCV no cargado</string>
     <string name="bluetooth_disabled">¡Advertencia! Bluetooth desactivado</string>
     <string name="opened_">Abierto:</string>

@@ -17,7 +17,7 @@
     <string name="select_serial_device">Выберите устройство</string>
     <string name="refresh">Обновить</string>
     <string name="home">Домой</string>
-    <string name="permissions_not_granted">Разрешения не предоставлены! Попробуйте ещё раз или выберите другое устройство</string>
+    <string name="permissions_not_granted">Разрешения не предоставлены! Попробуйте ещё раз</string>
     <string name="opencv_not_loaded">Ошибка! Библиотека OpenCV не загружена</string>
     <string name="bluetooth_disabled">Внимание! Bluetooth выключен</string>
     <string name="opened_">Открыто:</string>
