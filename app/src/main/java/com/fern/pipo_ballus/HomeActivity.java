@@ -29,6 +29,7 @@
 package com.fern.pipo_ballus;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.webkit.WebView;
 
@@ -37,6 +38,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.io.File;
+import java.util.Locale;
 
 public class HomeActivity extends AppCompatActivity {
     public static File settingsFile;
@@ -80,6 +82,30 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         // Load home HTML page
-        ((WebView) findViewById(R.id.webView)).loadUrl("file:///android_asset/home.html");
+        String locale = Locale.getDefault().toLanguageTag().toLowerCase();
+        if ((getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                == Configuration.UI_MODE_NIGHT_YES) {
+            if (locale.contains("ru"))
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/ru/home_night.html");
+            else if (locale.contains("es"))
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/es/home_night.html");
+            else
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/en/home_night.html");
+        }
+        else {
+            if (locale.contains("ru"))
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/ru/home.html");
+            else if (locale.contains("es"))
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/es/home.html");
+            else
+                ((WebView) findViewById(R.id.webView)).loadUrl(
+                        "file:///android_asset/en/home.html");
+        }
+
     }
 }

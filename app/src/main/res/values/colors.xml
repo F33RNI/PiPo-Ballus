@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="sector_color">#aa000000</color>
     <color name="transparent">#0000</color>
+    <color name="background">#eee</color>
 </resources>

@@ -25,6 +25,9 @@
     <string name="no_serial_device">No serial device selected</string>
     <string name="settings_saved">Settings saved successfully</string>
     <string name="wrong_settings">Wrong settings provided! Nothing saved</string>
+    <string name="serial_port_settings">Serial port settings</string>
+    <string name="usb_serial_baud_rate">USB Serial baud rate:</string>
+    <string name="packet_ending">Packet ending:</string>
     <string-array name="camera_options">
         <item>Any</item>
         <item>Back</item>

@@ -28,9 +28,13 @@
 
 :root {
     font-family: Sans-Serif;
+    --color-global-text: #000;
+    --color-page-background: #EEEEEE;
+}
 
-    --color-global-text: #fff;
-    --color-page-background: #333;
+img {
+    max-width: 100%;
+    height: auto;
 }
 
 body {
@@ -41,6 +45,6 @@ body {
 	background-attachment: fixed;
 	background-size: cover;
 	background-position: center;
-	margin: 0;
+	margin: 16dp;
 	padding: 0;
 }
