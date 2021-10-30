@@ -48,6 +48,8 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
+import java.util.concurrent.LinkedBlockingQueue;
+
 public class MainActivity extends AppCompatActivity {
     private final String TAG = this.getClass().getName();
 
@@ -59,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private OpenCVHandler openCVHandler;
     private SerialDevice serialDevice;
     private SerialHandler serialHandler;
+    private LinkedBlockingQueue<PositionContainer> positionContainers;
 
     /**
      * Checks if OpenCV library is loaded and asks for permissions
@@ -139,15 +142,22 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.bluetooth_disabled,
                     Toast.LENGTH_SHORT).show();
 
+        // Initialize LinkedBlockingQueue
+        positionContainers = new LinkedBlockingQueue<>(30);
+
         // Initialize OpenCVHandler class
-        openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView), this);
+        openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
+                this, positionContainers);
 
         // Initialize SerialHandler class
         serialDevice = new SerialDevice();
-        serialHandler = new SerialHandler(usbManager, bluetoothAdapter, serialDevice);
+        serialHandler =
+                new SerialHandler(usbManager, bluetoothAdapter, serialDevice, positionContainers);
 
-        // Connect PositionListener to OpenCVHandler
-        openCVHandler.setPositionListener(serialHandler.getPositionListener());
+        // Create and start SerialHandler thread
+        Thread serialThread = new Thread(serialHandler);
+        serialThread.setPriority(Thread.NORM_PRIORITY);
+        serialThread.start();
 
         // Create DevicesDialog
         DevicesDialog devicesDialog = new DevicesDialog(this, usbManager, bluetoothAdapter);
@@ -162,11 +172,20 @@ public class MainActivity extends AppCompatActivity {
 
                 // Open serial device
                 if (serialHandler.openDevice()) {
+                    // Clear LinkedBlockingQueue
+                    positionContainers.clear();
+
+                    // Start SerialThread
+                    if (!serialThread.isAlive())
+                        serialThread.start();
+
+                    // Display info message
                     Toast.makeText(getApplicationContext(), getString(R.string.opened_) +
                                     serialDevice.getDeviceName(),
                             Toast.LENGTH_SHORT).show();
                 }
                 else {
+                    // Display error message
                     Toast.makeText(getApplicationContext(), getString(R.string.error_opening) +
                             serialDevice.getDeviceName(), Toast.LENGTH_SHORT).show();
 
@@ -187,7 +206,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Create DeviceLostListener
-        serialHandler.setDeviceLostListener(() -> runOnUiThread(devicesDialog::show));
+        serialHandler.setDeviceLostListener(() -> runOnUiThread(() -> {
+            if (!devicesDialog.isShowing())
+                devicesDialog.show();
+        }));
 
         // Load OpenCV library and init layout
         if (!OpenCVLoader.initDebug()) {

@@ -39,19 +39,20 @@ import androidx.annotation.NonNull;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class provides communication over a serial port (Bluetooth or USB)
  */
-public class SerialHandler {
+public class SerialHandler implements Runnable {
     private final String TAG = this.getClass().getName();
     private static final UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private final UsbManager usbManager;
     private final BluetoothAdapter bluetoothAdapter;
     private final SerialDevice serialDevice;
+    private final LinkedBlockingQueue<PositionContainer> positionContainers;
 
-    private final PositionListener positionListener;
     private DeviceLostListener deviceLostListener;
 
     private UsbSerialPort usbSerialPort;
@@ -59,14 +60,7 @@ public class SerialHandler {
 
     private final byte[] serialBuffer = new byte[12];
 
-    private boolean deviceLost = false;
-
-    /**
-     * @return PositionListener interface (initialized inside this class)
-     */
-    public PositionListener getPositionListener() {
-        return this.positionListener;
-    }
+    private volatile boolean handleRunning = false;
 
     /**
      * Sets DeviceLostListener interface (must be initialized from outside)
@@ -78,12 +72,12 @@ public class SerialHandler {
 
     SerialHandler(UsbManager usbManager,
                   BluetoothAdapter bluetoothAdapter,
-                  @NonNull SerialDevice serialDevice) {
+                  @NonNull SerialDevice serialDevice,
+                  LinkedBlockingQueue<PositionContainer> positionContainers) {
         this.usbManager = usbManager;
         this.bluetoothAdapter = bluetoothAdapter;
         this.serialDevice = serialDevice;
-
-        this.positionListener = this::sendPosition;
+        this.positionContainers = positionContainers;
 
         this.serialBuffer[10] = SettingsContainer.suffix1;
         this.serialBuffer[11] = SettingsContainer.suffix2;
@@ -109,10 +103,8 @@ public class SerialHandler {
                         UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
 
                 // Check if port is opened
-                if (usbSerialPort.isOpen()) {
-                    deviceLost = false;
+                if (usbSerialPort.isOpen())
                     return true;
-                }
             }
 
             // Open Bluetooth serial device
@@ -122,10 +114,8 @@ public class SerialHandler {
                 bluetoothSocket.connect();
 
                 // Check if socket is opened
-                if (bluetoothSocket.isConnected()) {
-                    deviceLost = false;
+                if (bluetoothSocket.isConnected())
                     return true;
-                }
             }
         } catch (Exception e) {
             // Show error message
@@ -139,12 +129,34 @@ public class SerialHandler {
      */
     public void closeDevice() {
         try {
+            // Close ports
             if (serialDevice.isUsb() && usbSerialPort != null)
                 usbSerialPort.close();
             if (serialDevice.isBluetooth() && bluetoothAdapter != null && bluetoothSocket != null)
                 bluetoothSocket.close();
+
+            // Stop serial thread
+            handleRunning = false;
         } catch (Exception e) {
             Log.e(TAG, "Error closing serial device!", e);
+        }
+    }
+
+    /**
+     * Sends positionContainer from LinkedBlockingQueue to sendPosition() void in a loop
+     */
+    @Override
+    public void run() {
+        // Set handleRunning flag
+        handleRunning = true;
+
+        // Main loop
+        while (handleRunning) {
+            try {
+                sendPosition(positionContainers.take());
+            } catch (InterruptedException e) {
+                Log.e(TAG, "Error getting data from LinkedBlockingQueue!", e);
+            }
         }
     }
 
@@ -152,7 +164,7 @@ public class SerialHandler {
      * Sends data packet over serial port (bluetooth or USB)
      * @param positionContainer PositionContainer class
      */
-    public void sendPosition(@NonNull PositionContainer positionContainer) {
+    private void sendPosition(@NonNull PositionContainer positionContainer) {
         // Build serial packet
         // ballVSTableX
         serialBuffer[0] = (byte) (((int) positionContainer.ballVSTableX >> 8) & 0xFF);
@@ -204,11 +216,13 @@ public class SerialHandler {
             }
         }
 
-        // Send deviceLost signal once
         if (!isDataSent) {
-            if (!deviceLost && deviceLostListener != null)
+            // Clear LinkedBlockingQueue
+            positionContainers.clear();
+
+            // Send deviceLost signal
+            if (deviceLostListener != null)
                 deviceLostListener.deviceLost();
-            deviceLost = true;
         }
     }
 }

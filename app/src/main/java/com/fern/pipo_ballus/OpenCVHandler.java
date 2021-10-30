@@ -46,6 +46,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * This class provides the main algorithm for this application.
@@ -60,8 +61,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Activity activity;
-
-    private PositionListener positionListener;
+    private final LinkedBlockingQueue<PositionContainer> positionContainers;
 
     private Mat inputRGBA, outputRGBA, matRGBAt, matBGR, matBGRInverted, matHSV, matHSVInverted;
     private Mat matHue, matSaturation, matValue;
@@ -77,14 +77,12 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private boolean initialized;
     private int lostFrames;
 
-    public void setPositionListener(PositionListener positionListener) {
-        this.positionListener = positionListener;
-    }
-
     OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase,
-                  Activity activity) {
+                  Activity activity,
+                  LinkedBlockingQueue<PositionContainer> positionContainers) {
         this.cameraBridgeViewBase = cameraBridgeViewBase;
         this.activity = activity;
+        this.positionContainers = positionContainers;
 
         this.positionContainer = new PositionContainer();
 
@@ -476,13 +474,18 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             else
                 positionContainer.ballDetected = false;
 
-            // Send new ball's position
-            if (positionContainer.ballDetected && positionListener != null)
-                try {
-                    positionListener.newPosition(positionContainer);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error sending new position to PositionListener!", e);
+            // Send new ball's position or clear the LinkedBlockingQueue
+            try {
+                if (positionContainers != null) {
+                    if (positionContainer.ballDetected && positionContainers.size() < 30)
+                        positionContainers.put(positionContainer);
+                    else
+                        positionContainers.clear();
                 }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error putting new position to LinkedBlockingQueue!", e);
+            }
 
             // Display a message about low performance if the frame time is more than 33 ms (30 fps)
             if (System.currentTimeMillis() - timeStart > 33)
