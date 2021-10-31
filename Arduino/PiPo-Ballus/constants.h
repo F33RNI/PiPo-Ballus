@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Android application
+ * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Table controller
  *
  * Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,24 +26,25 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-package com.fern.pipo_ballus;
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
-/**
- * This class provides a container for the position of the ball
- * relative to the center of the table.
- */
-public class PositionContainer {
-    public double ballVSTableX, ballVSTableY, ballVSTableZ;
-    public double ballSetpointX, ballSetpointY, ballSetpointZ;
-    public boolean ballDetected;
+// The loop frequency is 250 Hz. Changing it may cause errors or even injury
+const uint32_t LOOP_PERIOD PROGMEM = 4000;
+const uint32_t MAX_ALLOWED_LOOP_PERIOD PROGMEM = 4050;
 
-    PositionContainer() {
-        ballVSTableX = 1500;
-        ballVSTableY = 1500;
-        ballVSTableZ = 1500;
-        ballSetpointX = 1500;
-        ballSetpointY = 1500;
-        ballSetpointZ = 1500;
-        ballDetected = false;
-    }
-}
+// Cartesian to delta conversion
+const uint16_t X_MIN_P PROGMEM = 1500;
+const uint16_t X_MIN_Q PROGMEM = 1933; // 1500 + 250 * sqrt(3)
+const uint16_t X_MIN_R PROGMEM = 1067; // 1500 - 250 * sqrt(3)
+const uint16_t X_MAX_P PROGMEM = 1500;
+const uint16_t X_MAX_Q PROGMEM = 1067; // 1500 - 250 * sqrt(3)
+const uint16_t X_MAX_R PROGMEM = 1933; // 1500 + 250 * sqrt(3)
+const uint16_t Y_MIN_P PROGMEM = 1000;
+const uint16_t Y_MIN_Q PROGMEM = 1750;
+const uint16_t Y_MIN_R PROGMEM = 1750;
+const uint16_t Y_MAX_P PROGMEM = 2000;
+const uint16_t Y_MAX_Q PROGMEM = 1250;
+const uint16_t Y_MAX_R PROGMEM = 1250;
+
+#endif

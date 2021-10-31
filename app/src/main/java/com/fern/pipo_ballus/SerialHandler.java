@@ -58,7 +58,7 @@ public class SerialHandler implements Runnable {
     private UsbSerialPort usbSerialPort;
     private BluetoothSocket bluetoothSocket;
 
-    private final byte[] serialBuffer = new byte[12];
+    private final byte[] serialBuffer = new byte[16];
 
     private volatile boolean handleRunning = false;
 
@@ -79,8 +79,8 @@ public class SerialHandler implements Runnable {
         this.serialDevice = serialDevice;
         this.positionContainers = positionContainers;
 
-        this.serialBuffer[10] = SettingsContainer.suffix1;
-        this.serialBuffer[11] = SettingsContainer.suffix2;
+        this.serialBuffer[14] = SettingsContainer.suffix1;
+        this.serialBuffer[15] = SettingsContainer.suffix2;
     }
 
     /**
@@ -166,26 +166,39 @@ public class SerialHandler implements Runnable {
      */
     private void sendPosition(@NonNull PositionContainer positionContainer) {
         // Build serial packet
+
         // ballVSTableX
         serialBuffer[0] = (byte) (((int) positionContainer.ballVSTableX >> 8) & 0xFF);
         serialBuffer[1] = (byte) ((int) positionContainer.ballVSTableX & 0xFF);
+
         // ballVSTableY
         serialBuffer[2] = (byte) (((int) positionContainer.ballVSTableY >> 8) & 0xFF);
         serialBuffer[3] = (byte) ((int) positionContainer.ballVSTableY & 0xFF);
+
+        // ballVSTableZ (Currently always 1500 (see OpenCVHandler))
+        serialBuffer[4] = (byte) (((int) positionContainer.ballVSTableZ >> 8) & 0xFF);
+        serialBuffer[5] = (byte) ((int) positionContainer.ballVSTableZ & 0xFF);
+
         // ballSetpointX
-        serialBuffer[4] = (byte) (((int) positionContainer.ballSetpointX >> 8) & 0xFF);
-        serialBuffer[5] = (byte) ((int) positionContainer.ballSetpointX & 0xFF);
+        serialBuffer[6] = (byte) (((int) positionContainer.ballSetpointX >> 8) & 0xFF);
+        serialBuffer[7] = (byte) ((int) positionContainer.ballSetpointX & 0xFF);
+
         // ballSetpointY
-        serialBuffer[6] = (byte) (((int) positionContainer.ballSetpointY >> 8) & 0xFF);
-        serialBuffer[7] = (byte) ((int) positionContainer.ballSetpointY & 0xFF);
+        serialBuffer[8] = (byte) (((int) positionContainer.ballSetpointY >> 8) & 0xFF);
+        serialBuffer[9] = (byte) ((int) positionContainer.ballSetpointY & 0xFF);
+
+        // ballSetpointZ
+        serialBuffer[10] = (byte) (((int) positionContainer.ballSetpointZ >> 8) & 0xFF);
+        serialBuffer[11] = (byte) ((int) positionContainer.ballSetpointZ & 0xFF);
+
         // System info
-        serialBuffer[8] = (byte) 0;
+        serialBuffer[12] = (byte) 0;
 
         // Calculate check byte
         byte checkByte = 0;
-        for (int i = 0; i <= 8; i++)
+        for (int i = 0; i <= 12; i++)
             checkByte = (byte) (checkByte ^ serialBuffer[i]);
-        serialBuffer[9] = checkByte;
+        serialBuffer[13] = checkByte;
 
         // Create checking flag
         boolean isDataSent = false;

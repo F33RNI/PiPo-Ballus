@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Android application
+ * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Table controller
  *
  * Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,24 +26,38 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-package com.fern.pipo_ballus;
+#ifndef PID_H
+#define PID_H
 
-/**
- * This class provides a container for the position of the ball
- * relative to the center of the table.
- */
-public class PositionContainer {
-    public double ballVSTableX, ballVSTableY, ballVSTableZ;
-    public double ballSetpointX, ballSetpointY, ballSetpointZ;
-    public boolean ballDetected;
+/*********************************/
+/*            X-Y PID            */
+/*********************************/
+// P term of X-Y PID controller (default = 1.3)
+const double PID_XY_P PROGMEM = 0.1;
 
-    PositionContainer() {
-        ballVSTableX = 1500;
-        ballVSTableY = 1500;
-        ballVSTableZ = 1500;
-        ballSetpointX = 1500;
-        ballSetpointY = 1500;
-        ballSetpointZ = 1500;
-        ballDetected = false;
-    }
-}
+// I term of X-Y PID controller (default = 0.04)
+const double PID_XY_I PROGMEM = 0;
+
+// D term of X-Y PID controller (default = 18.0)
+const double PID_XY_D PROGMEM = 0.0;
+
+// Maximum output of the X-Y PID controller (+ / -)
+const double PID_XY_MAX PROGMEM = 400;
+
+
+/*********************************/
+/*            Z PID            */
+/*********************************/
+// P term of Z PID controller (default = 1.0)
+const double PID_Z_P PROGMEM = 1.0;
+
+// I term of Z PID controller (default = 0.0)
+const double PID_Z_I PROGMEM = 0;
+
+// D term of Z PID controller (default = 0.0)
+const double PID_Z_D PROGMEM = 0.0;
+
+// Maximum output of the Z PID controller (+ / -)
+const double PID_Z_MAX PROGMEM = 500;
+
+#endif

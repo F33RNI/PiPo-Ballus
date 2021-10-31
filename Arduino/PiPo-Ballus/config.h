@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Android application
+ * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Table controller
  *
  * Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,24 +26,34 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-package com.fern.pipo_ballus;
+#ifndef CONFIG_H
+#define CONFIG_H
 
-/**
- * This class provides a container for the position of the ball
- * relative to the center of the table.
- */
-public class PositionContainer {
-    public double ballVSTableX, ballVSTableY, ballVSTableZ;
-    public double ballSetpointX, ballSetpointY, ballSetpointZ;
-    public boolean ballDetected;
+/**********************************************/
+/*            Serial communication            */
+/**********************************************/
+// Serial port speed
+const uint32_t SERIAL_BAUD_RATE PROGMEM = 57600;
 
-    PositionContainer() {
-        ballVSTableX = 1500;
-        ballVSTableY = 1500;
-        ballVSTableZ = 1500;
-        ballSetpointX = 1500;
-        ballSetpointY = 1500;
-        ballSetpointZ = 1500;
-        ballDetected = false;
-    }
-}
+// Serial packet ending
+const uint8_t SERIAL_SUFFIX_1 PROGMEM = 0xEE;
+const uint8_t SERIAL_SUFFIX_2 PROGMEM = 0xEF;
+
+// If there is no packet within 125loops * 4ms = 500ms, the connection is considered lost
+const uint8_t WATCHDOG_LOST_CYCLES PROGMEM = 125;
+
+
+/**************************************/
+/*            Servo motors            */
+/**************************************/
+// Actual PDM pre servo at minimum value (1000)
+const uint16_t SERVO_P_LOWEST PROGMEM = 2000;
+const uint16_t SERVO_Q_LOWEST PROGMEM = 2000;
+const uint16_t SERVO_R_LOWEST PROGMEM = 2010;
+
+// Actual PDM pre servo at maximum value (1000)
+const uint16_t SERVO_P_HIGHEST PROGMEM = 1450;
+const uint16_t SERVO_Q_HIGHEST PROGMEM = 1450;
+const uint16_t SERVO_R_HIGHEST PROGMEM = 1450;
+
+#endif

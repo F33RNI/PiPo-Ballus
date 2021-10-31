@@ -51,6 +51,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * This class provides the main algorithm for this application.
  * Namely, it calculates the position of the ball on the table using computer vision
+ *
+ * TODO: Add ball altitude detection (ballVSTableZ, ballSetpointZ)
  */
 public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2 {
     private final String TAG = this.getClass().getName();
@@ -413,6 +415,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                                 if (!positionContainer.ballDetected) {
                                     positionContainer.ballVSTableX = ballVSTableX;
                                     positionContainer.ballVSTableY = ballVSTableY;
+                                    positionContainer.ballVSTableZ = 1500;
                                     positionContainer.ballDetected = true;
                                 }
 
@@ -430,6 +433,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                                                     (double) ballVSTableY
                                                             * (1 - SettingsContainer.
                                                             positionFilter);
+                                    positionContainer.ballVSTableZ = 1500;
                                 }
 
                                 // Update lost counter

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Android application
+ * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Table controller
  *
  * Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,24 +26,30 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-package com.fern.pipo_ballus;
+#ifndef DATATYPES_H
+#define DATATYPES_H
 
-/**
- * This class provides a container for the position of the ball
- * relative to the center of the table.
- */
-public class PositionContainer {
-    public double ballVSTableX, ballVSTableY, ballVSTableZ;
-    public double ballSetpointX, ballSetpointY, ballSetpointZ;
-    public boolean ballDetected;
+// Common variables
+uint32_t loop_timer;
 
-    PositionContainer() {
-        ballVSTableX = 1500;
-        ballVSTableY = 1500;
-        ballVSTableZ = 1500;
-        ballSetpointX = 1500;
-        ballSetpointY = 1500;
-        ballSetpointZ = 1500;
-        ballDetected = false;
-    }
-}
+// Serial communication
+uint8_t serial_buffer[16];
+uint8_t serial_buffer_position, serial_byte_previous, serial_check_byte, serial_temp_byte;
+uint8_t system_info_byte;
+uint8_t serial_watchdog = UINT8_MAX;
+
+// PID controller variables
+int16_t pid_inpit_x, pid_inpit_y, pid_inpit_z;
+int16_t pid_x_setpoint, pid_y_setpoint, pid_z_setpoint;
+double pid_error_temp;
+double pid_output_x, pid_output_y, pid_output_z;
+double pid_i_mem_x, pid_last_x_d_error;
+double pid_i_mem_y, pid_last_y_d_error;
+double pid_i_mem_z, pid_last_z_d_error;
+
+// Servo output
+uint16_t servo_x_pulse, servo_y_pulse, servo_z_pulse;
+uint16_t servo_p_pulse, servo_q_pulse, servo_r_pulse;
+uint16_t servo_p_pulse_serial, servo_q_pulse_serial, servo_r_pulse_serial;
+
+#endif
