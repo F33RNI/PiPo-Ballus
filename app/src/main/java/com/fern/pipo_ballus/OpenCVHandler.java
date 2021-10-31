@@ -481,7 +481,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             // Send new ball's position or clear the LinkedBlockingQueue
             try {
                 if (positionContainers != null) {
-                    if (positionContainer.ballDetected && positionContainers.size() < 30)
+                    if (positionContainer.ballDetected && positionContainers.size() < 10)
                         positionContainers.put(positionContainer);
                     else
                         positionContainers.clear();

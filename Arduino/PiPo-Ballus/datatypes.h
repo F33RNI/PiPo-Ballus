@@ -41,11 +41,11 @@ uint8_t serial_watchdog = UINT8_MAX;
 // PID controller variables
 int16_t pid_inpit_x, pid_inpit_y, pid_inpit_z;
 int16_t pid_x_setpoint, pid_y_setpoint, pid_z_setpoint;
-double pid_error_temp;
-double pid_output_x, pid_output_y, pid_output_z;
-double pid_i_mem_x, pid_last_x_d_error;
-double pid_i_mem_y, pid_last_y_d_error;
-double pid_i_mem_z, pid_last_z_d_error;
+float pid_error_temp;
+float pid_output_x, pid_output_y, pid_output_z;
+float pid_i_mem_x, pid_last_x_d_error;
+float pid_i_mem_y, pid_last_y_d_error;
+float pid_i_mem_z, pid_last_z_d_error;
 
 // Servo output
 uint16_t servo_x_pulse, servo_y_pulse, servo_z_pulse;

@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
                 if (hasPermissions(MainActivity.this, PERMISSIONS)) {
                     Log.i(TAG, "Permissions granted");
 
-                    // Continue initialization
-                    initModules();
+                    // Initialize OpenCVHandler class
+                    openCVHandler.initView();
                 } else {
                     // Grant permissions
                     Log.w(TAG, "Not all permissions granted");
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
 
         // Initialize LinkedBlockingQueue
-        positionContainers = new LinkedBlockingQueue<>(30);
+        positionContainers = new LinkedBlockingQueue<>(10);
 
         // Initialize OpenCVHandler class
         openCVHandler = new OpenCVHandler(findViewById(R.id.javaCameraView),
@@ -210,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
             if (!devicesDialog.isShowing())
                 devicesDialog.show();
         }));
+
+        // Show device selection dialog
+        devicesDialog.show();
 
         // Load OpenCV library and init layout
         if (!OpenCVLoader.initDebug()) {
@@ -286,8 +289,8 @@ public class MainActivity extends AppCompatActivity {
         if (hasPermissions(this, PERMISSIONS)) {
             Log.i(TAG, "Permissions granted");
 
-            // Continue initialization
-            initModules();
+            // Initialize OpenCVHandler class
+            openCVHandler.initView();
         }
         else {
             Toast.makeText(this, getString(R.string.permissions_not_granted),
@@ -302,13 +305,5 @@ public class MainActivity extends AppCompatActivity {
         startActivity(new Intent(getApplicationContext(), HomeActivity.class));
         System.gc();
         finish();
-    }
-
-    /**
-     * Initializes OpenCVHandler and data communication
-     */
-    private void initModules() {
-        // Initialize OpenCVHandler class
-        openCVHandler.initView();
     }
 }

@@ -42,8 +42,8 @@ const uint32_t SERIAL_BAUD_RATE PROGMEM = 57600;
 const uint8_t SERIAL_SUFFIX_1 PROGMEM = 0xEE;
 const uint8_t SERIAL_SUFFIX_2 PROGMEM = 0xEF;
 
-// If there is no packet within 125loops * 4ms = 500ms, the connection is considered lost
-const uint8_t WATCHDOG_LOST_CYCLES PROGMEM = 125;
+// If there is no packet within 25loops * 20ms = 500ms, the connection is considered lost
+const uint8_t WATCHDOG_LOST_CYCLES PROGMEM = 25;
 
 
 /**************************************/

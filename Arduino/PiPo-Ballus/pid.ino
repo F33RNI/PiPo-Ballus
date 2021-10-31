@@ -32,7 +32,7 @@
 void pid(void) {
     // X- PID controller
     // Calculate error
-    pid_error_temp = (double) (pid_inpit_x - pid_x_setpoint);
+    pid_error_temp = (float) (pid_inpit_x - pid_x_setpoint);
 
     // Calculate I term
     pid_i_mem_x += PID_XY_I * pid_error_temp;
@@ -50,7 +50,7 @@ void pid(void) {
 
     // Y PID controller
     // Calculate error
-    pid_error_temp = (double) (pid_inpit_y - pid_y_setpoint);
+    pid_error_temp = (float) (pid_inpit_y - pid_y_setpoint);
 
     // Calculate I term
     pid_i_mem_y += PID_XY_I * pid_error_temp;
@@ -68,7 +68,7 @@ void pid(void) {
 
     // Z PID controller
     // Calculate error
-    pid_error_temp = (double)(pid_inpit_z - pid_z_setpoint);
+    pid_error_temp = (float) (pid_inpit_z - pid_z_setpoint);
 
     // Calculate I term
     pid_i_mem_z += PID_Z_I * pid_error_temp;

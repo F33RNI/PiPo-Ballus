@@ -47,6 +47,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class SerialHandler implements Runnable {
     private final String TAG = this.getClass().getName();
     private static final UUID BT_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+    private static final int maxLostPackets = 5;
 
     private final UsbManager usbManager;
     private final BluetoothAdapter bluetoothAdapter;
@@ -59,6 +60,8 @@ public class SerialHandler implements Runnable {
     private BluetoothSocket bluetoothSocket;
 
     private final byte[] serialBuffer = new byte[16];
+
+    private int dataLossCounter = 0;
 
     private volatile boolean handleRunning = false;
 
@@ -206,11 +209,11 @@ public class SerialHandler implements Runnable {
         // Send data over serial
         if (serialDevice.isUsb() && usbSerialPort != null && usbSerialPort.isOpen()) {
             try {
-                usbSerialPort.write(serialBuffer, 0);
+                usbSerialPort.write(serialBuffer, 4);
                 isDataSent = true;
             } catch (Exception e) {
                 Log.e(TAG, "Error sending data over USB serial!", e);
-                usbSerialPort = null;
+                //usbSerialPort = null;
                 isDataSent = false;
 
             }
@@ -224,12 +227,17 @@ public class SerialHandler implements Runnable {
                 isDataSent = true;
             } catch (Exception e) {
                 Log.e(TAG, "Error sending data over bluetooth serial!", e);
-                bluetoothSocket = null;
+                //bluetoothSocket = null;
                 isDataSent = false;
             }
         }
 
-        if (!isDataSent) {
+        if (!isDataSent && dataLossCounter < maxLostPackets)
+            dataLossCounter++;
+        else if (dataLossCounter > 0)
+            dataLossCounter--;
+
+        if (dataLossCounter >= maxLostPackets) {
             // Clear LinkedBlockingQueue
             positionContainers.clear();
 

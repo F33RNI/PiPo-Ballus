@@ -30,8 +30,8 @@
 #define CONSTANTS_H
 
 // The loop frequency is 250 Hz. Changing it may cause errors or even injury
-const uint32_t LOOP_PERIOD PROGMEM = 4000;
-const uint32_t MAX_ALLOWED_LOOP_PERIOD PROGMEM = 4050;
+const uint32_t LOOP_PERIOD PROGMEM = 20000;
+const uint32_t MAX_ALLOWED_LOOP_PERIOD PROGMEM = 20500;
 
 // Cartesian to delta conversion
 const uint16_t X_MIN_P PROGMEM = 1500;

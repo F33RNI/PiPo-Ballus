@@ -65,11 +65,8 @@ void setup()
 
 void loop()
 {
-    // Read new data from serial port
+    // Read new data from serial port and execute PID
     serial_read();
-
-    // Execute PID controller
-    pid();
 
     // Reset PID controller if serial connection is lost
     if (serial_watchdog >= WATCHDOG_LOST_CYCLES) {
@@ -84,10 +81,10 @@ void loop()
         pid_output_z = 0;
     }
 
-    // Add 1500 to convert pid output to servo PDM
-    servo_x_pulse = 1500. + pid_output_x;
-    servo_y_pulse = 1500. + pid_output_y;
-    servo_z_pulse = 1500. + pid_output_z;
+    // Subtract PID output from 1500 to convert pid output to servo PDM
+    servo_x_pulse = 1500. - pid_output_x;
+    servo_y_pulse = 1500. - pid_output_y;
+    servo_z_pulse = 1500. - pid_output_z;
 
     // Convert from cartesianto delta
     servo_mapper();

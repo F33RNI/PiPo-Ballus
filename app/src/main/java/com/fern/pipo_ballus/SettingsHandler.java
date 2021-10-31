@@ -85,15 +85,15 @@ public class SettingsHandler {
             JSONObject jsonObject = new JSONObject(stringBuilder.toString());
 
             // Parse json object to SettingsContainer variables
-            SettingsContainer.cameraID = (int) jsonObject.get("camera_id");
-            SettingsContainer.tableColorLower = (int) jsonObject.get("table_color_lower");
-            SettingsContainer.tableColorUpper = (int) jsonObject.get("table_color_upper");
-            SettingsContainer.ballColorLower = (int) jsonObject.get("ball_color_lower");
-            SettingsContainer.ballColorUpper = (int) jsonObject.get("ball_color_upper");
-            SettingsContainer.positionFilter = (double) jsonObject.get("position_filter");
-            SettingsContainer.baudRate = (int) jsonObject.get("baud_rate");
-            SettingsContainer.suffix1 = (byte)((int) jsonObject.get("suffix_1"));
-            SettingsContainer.suffix2 = (byte)((int) jsonObject.get("suffix_2"));
+            SettingsContainer.cameraID = jsonObject.getInt("camera_id");
+            SettingsContainer.tableColorLower = jsonObject.getInt("table_color_lower");
+            SettingsContainer.tableColorUpper = jsonObject.getInt("table_color_upper");
+            SettingsContainer.ballColorLower = jsonObject.getInt("ball_color_lower");
+            SettingsContainer.ballColorUpper = jsonObject.getInt("ball_color_upper");
+            SettingsContainer.positionFilter = jsonObject.getDouble("position_filter");
+            SettingsContainer.baudRate = jsonObject.getInt("baud_rate");
+            SettingsContainer.suffix1 = (byte)(jsonObject.getInt("suffix_1"));
+            SettingsContainer.suffix2 = (byte)(jsonObject.getInt("suffix_2"));
 
         } catch (Exception e) {
             // Show error message
