@@ -54,7 +54,7 @@ const uint16_t SERVO_P_LOWEST PROGMEM = 2000;
 const uint16_t SERVO_Q_LOWEST PROGMEM = 2000;
 const uint16_t SERVO_R_LOWEST PROGMEM = 2010;
 
-// Actual PDM pre servo at maximum value (1000)
+// Actual PDM pre servo at maximum value (2000)
 const uint16_t SERVO_P_HIGHEST PROGMEM = 1450;
 const uint16_t SERVO_Q_HIGHEST PROGMEM = 1450;
 const uint16_t SERVO_R_HIGHEST PROGMEM = 1450;
