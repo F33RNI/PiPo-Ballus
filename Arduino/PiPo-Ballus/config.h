@@ -32,6 +32,9 @@
 /**********************************************/
 /*            Serial communication            */
 /**********************************************/
+// communication serial port
+#define COMMUNICATION_SERIAL Serial1
+
 // Serial port speed
 const uint32_t SERIAL_BAUD_RATE PROGMEM = 57600;
 

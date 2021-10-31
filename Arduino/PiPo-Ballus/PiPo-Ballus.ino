@@ -58,9 +58,9 @@ void setup()
     pinMode(PB8, PWM);
 
     // Setup serial connection
-    Serial1.begin(SERIAL_BAUD_RATE);
+    COMMUNICATION_SERIAL.begin(SERIAL_BAUD_RATE);
     delay(200);
-    Serial1.flush();
+    COMMUNICATION_SERIAL.flush();
 }
 
 void loop()

@@ -32,9 +32,9 @@ void serial_read(void) {
         serial_watchdog++;
 
     // Continue loop until all bytes are read
-    while (Serial1.available()) {
+    while (COMMUNICATION_SERIAL.available()) {
         // Read current byte
-        serial_buffer[serial_buffer_position] = Serial1.read();
+        serial_buffer[serial_buffer_position] = COMMUNICATION_SERIAL.read();
 
         if (serial_byte_previous == SERIAL_SUFFIX_1 && serial_buffer[serial_buffer_position] == SERIAL_SUFFIX_2) {
             // If data suffix appears
