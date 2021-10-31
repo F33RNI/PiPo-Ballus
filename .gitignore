@@ -13,3 +13,11 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+/Arduino/PiPo-Ballus/.vs/
+/Arduino/PiPo-Ballus/__vm/
+/Arduino/PiPo-Ballus/PiPo-Ballus.sln
+/Arduino/PiPo-Ballus/PiPo-Ballus.vcxproj
+/Arduino/PiPo-Ballus/PiPo-Ballus.vcxproj.filters
+/Arduino/PiPo-Ballus/PiPo-Ballus.vcxproj.user
+/Arduino/PiPo-Ballus/Release/
