@@ -90,10 +90,14 @@ public class SettingsHandler {
             SettingsContainer.tableColorUpper = (int) jsonObject.get("table_color_upper");
             SettingsContainer.ballColorLower = (int) jsonObject.get("ball_color_lower");
             SettingsContainer.ballColorUpper = (int) jsonObject.get("ball_color_upper");
+            SettingsContainer.positionFilter = (double) jsonObject.get("position_filter");
+            SettingsContainer.baudRate = (int) jsonObject.get("baud_rate");
+            SettingsContainer.suffix1 = (byte)((int) jsonObject.get("suffix_1"));
+            SettingsContainer.suffix2 = (byte)((int) jsonObject.get("suffix_2"));
 
         } catch (Exception e) {
             // Show error message
-            Toast.makeText(activity, "Error parsing settings!",
+            Toast.makeText(activity, R.string.error_parsing_settings,
                     Toast.LENGTH_SHORT).show();
             Log.e(TAG, "Error parsing settings!", e);
 
@@ -127,6 +131,10 @@ public class SettingsHandler {
             jsonObject.put("table_color_upper", SettingsContainer.tableColorUpper);
             jsonObject.put("ball_color_lower", SettingsContainer.ballColorLower);
             jsonObject.put("ball_color_upper", SettingsContainer.ballColorUpper);
+            jsonObject.put("position_filter", SettingsContainer.positionFilter);
+            jsonObject.put("baud_rate", SettingsContainer.baudRate);
+            jsonObject.put("suffix_1", SettingsContainer.suffix1 & 0xFF);
+            jsonObject.put("suffix_2", SettingsContainer.suffix2 & 0xFF);
 
             // Write JSONObject to file
             FileWriter fileWriter = new FileWriter(settingsFile);
@@ -136,7 +144,7 @@ public class SettingsHandler {
 
         } catch (Exception e) {
             // Show error message
-            Toast.makeText(activity, "Error saving settings!",
+            Toast.makeText(activity, R.string.error_saving_settings,
                     Toast.LENGTH_SHORT).show();
             Log.e(TAG, "Error saving settings!", e);
 

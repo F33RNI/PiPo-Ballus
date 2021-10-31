@@ -153,7 +153,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         }
 
         // Convert ball range to Scalar
-        if (hsvBallLower.getHue() == hsvBallUpper.getHue()) {
+        if (Math.abs(hsvBallLower.getHue() - hsvBallUpper.getHue()) < 5) {
             ballRangeInverted = false;
             colorBallLower = new Scalar(0,
                     hsvBallLower.getSaturationInt(), hsvBallLower.getValueInt());

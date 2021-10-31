@@ -31,17 +31,22 @@ package com.fern.pipo_ballus;
 import android.animation.ArgbEvaluator;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.slider.Slider;
 
 import org.opencv.android.CameraBridgeViewBase;
 
@@ -56,11 +61,17 @@ public class SettingsActivity extends AppCompatActivity {
     private int cameraID;
     private int tableColorLower, tableColorUpper;
     private int ballColorLower, ballColorUpper;
+    private double positionFilter;
+    private int baudRate;
+    private byte suffix1, suffix2;
 
     // Elements
-    Spinner cameraIDSpinner;
-    Button settingsTableColor;
-    Button settingsBallColor;
+    private Spinner cameraIDSpinner;
+    private Button settingsTableColor;
+    private Button settingsBallColor;
+    private Slider settingsFilter;
+    private EditText settingsSuffix1, settingsSuffix2;
+    private EditText settingsBaudRate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +85,10 @@ public class SettingsActivity extends AppCompatActivity {
         cameraIDSpinner = findViewById(R.id.cameraIDSpinner);
         settingsTableColor = findViewById(R.id.settingsTableColor);
         settingsBallColor = findViewById(R.id.settingsBallColor);
+        settingsFilter = findViewById(R.id.settingsFilter);
+        settingsSuffix1 = findViewById(R.id.settingsSuffix1);
+        settingsSuffix2 = findViewById(R.id.settingsSuffix2);
+        settingsBaudRate = findViewById(R.id.settingsBaudRate);
 
         // Select home item
         bottomNavigationView.setSelectedItemId(R.id.menuSettings);
@@ -99,8 +114,12 @@ public class SettingsActivity extends AppCompatActivity {
             cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
             tableColorLower = 0xff1e3319;
             tableColorUpper = 0xff00ffd5;
-            ballColorLower = 0xff4d323f;
-            ballColorUpper = 0xffff6a00;
+            ballColorLower = 0xff7f7f7f;
+            ballColorUpper = 0xffffb2b2;
+            positionFilter = 0.4;
+            baudRate = 57600;
+            suffix1 = (byte) 0xEE;
+            suffix2 = (byte) 0xEF;
 
             // Update view
             updateView();
@@ -158,12 +177,92 @@ public class SettingsActivity extends AppCompatActivity {
             colorPickerDialog.show();
         });
 
+        // Connect position filter slider
+        settingsFilter.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                positionFilter = slider.getValue();
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                positionFilter = slider.getValue();
+            }
+        });
+
+        // Connect USB serial baud rate
+        settingsBaudRate.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() > 0)
+                    baudRate = Integer.parseInt(charSequence.toString());
+                else
+                    baudRate = 0;
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        // Connect suffix1
+        settingsSuffix1.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() > 0)
+                    suffix1 = (byte) Integer.parseInt(charSequence.toString(), 16);
+                else
+                    suffix1 = 0;
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+        // Connect suffix2
+        settingsSuffix2.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() > 0)
+                    suffix2 = (byte) Integer.parseInt(charSequence.toString(), 16);
+                else
+                    suffix2 = 0;
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
         // Copy settings to local variables
         this.cameraID = SettingsContainer.cameraID;
         this.tableColorLower = SettingsContainer.tableColorLower;
         this.tableColorUpper = SettingsContainer.tableColorUpper;
         this.ballColorLower = SettingsContainer.ballColorLower;
         this.ballColorUpper = SettingsContainer.ballColorUpper;
+        this.positionFilter = SettingsContainer.positionFilter;
+        this.baudRate = SettingsContainer.baudRate;
+        this.suffix1 = SettingsContainer.suffix1;
+        this.suffix2 = SettingsContainer.suffix2;
 
         // Load view
         updateView();
@@ -200,6 +299,16 @@ public class SettingsActivity extends AppCompatActivity {
         String ballColorRange = String.format("#%06X", (0xFFFFFF & ballColorLower))
                 + " - " + String.format("#%06X", (0xFFFFFF & ballColorUpper));
         settingsBallColor.setText(ballColorRange);
+
+        // Ball position filter
+        settingsFilter.setValue((float) positionFilter);
+
+        // USB serial baud rate
+        settingsBaudRate.setText(String.valueOf(baudRate));
+
+        // Serial packet suffixes
+        settingsSuffix1.setText(String.format("%02X", suffix1 & 0xFF));
+        settingsSuffix2.setText(String.format("%02X", suffix2 & 0xFF));
     }
 
     /**
@@ -214,6 +323,10 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsContainer.tableColorUpper = this.tableColorUpper;
             SettingsContainer.ballColorLower = this.ballColorLower;
             SettingsContainer.ballColorUpper = this.ballColorUpper;
+            SettingsContainer.positionFilter = this.positionFilter;
+            SettingsContainer.baudRate = this.baudRate;
+            SettingsContainer.suffix1 = this.suffix1;
+            SettingsContainer.suffix2 = this.suffix2;
 
             // Save settings to file
             SettingsHandler.saveSettings(HomeActivity.settingsFile, this);

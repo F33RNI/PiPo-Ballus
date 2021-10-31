@@ -34,13 +34,14 @@ import org.opencv.android.CameraBridgeViewBase;
  * This class stores application settings
  */
 public class SettingsContainer {
+    public static boolean settingsLoaded = false;
     public static int cameraID = CameraBridgeViewBase.CAMERA_ID_ANY;
     public static int tableColorLower = 0xff1e3319;
     public static int tableColorUpper = 0xff00ffd5;
-    public static int ballColorLower = 0xff4d323f;
-    public static int ballColorUpper = 0xffff6a00;
+    public static int ballColorLower = 0xff7f7f7f;
+    public static int ballColorUpper = 0xffffb2b2;
     public static double positionFilter = 0.4;
-    public static int baudRate = 115200;
+    public static int baudRate = 57600;
     public static byte suffix1 = (byte) 0xEE;
     public static byte suffix2 = (byte) 0xEF;
 }

@@ -47,11 +47,6 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Load and parse settings
-        settingsFile = new File(getBaseContext().getExternalFilesDir( null),
-                "settings.json");
-        new SettingsHandler(settingsFile, this).readSettings();
-
         // Show home activity
         setContentView(R.layout.activity_home);
 
@@ -65,6 +60,13 @@ public class HomeActivity extends AppCompatActivity {
 
         // Select home item
         bottomNavigationView.setSelectedItemId(R.id.menuHome);
+
+        // Load and parse settings
+        if (!SettingsContainer.settingsLoaded) {
+            settingsFile = new File(getBaseContext().getExternalFilesDir(null),
+                    "settings.json");
+            new SettingsHandler(settingsFile, this).readSettings();
+        }
 
         // Add bottom menu clicks
         bottomNavigationView.setOnItemSelectedListener(item -> {

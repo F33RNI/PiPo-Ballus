@@ -15,7 +15,5 @@
         <item name="windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
-
-        <item name="android:windowBackground">@color/background</item>
     </style>
 </resources>
