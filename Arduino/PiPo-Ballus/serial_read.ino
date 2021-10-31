@@ -63,9 +63,6 @@ void serial_read(void) {
 
                 // Currently not used
                 system_info_byte = serial_buffer[12];
-
-                // Execute PID controller
-                pid();
             }
         }
         else {

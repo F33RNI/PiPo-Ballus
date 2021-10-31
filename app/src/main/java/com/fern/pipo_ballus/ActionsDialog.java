@@ -31,6 +31,7 @@ package com.fern.pipo_ballus;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
@@ -39,6 +40,12 @@ import androidx.annotation.NonNull;
  * This class opens a dialog allowing you to select actions with the ball.
  */
 public class ActionsDialog extends Dialog {
+    private ActionListener actionListener;
+
+    public void setActionListener(ActionListener actionListener) {
+        this.actionListener = actionListener;
+    }
+
     public ActionsDialog(@NonNull Context context) {
         super(context);
     }
@@ -50,5 +57,29 @@ public class ActionsDialog extends Dialog {
         // Load activity
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_actions);
+
+        // Connect actionRotateCW button
+        findViewById(R.id.actionRotateCW).setOnClickListener(view -> {
+            actionListener.rotateCW();
+            dismiss();
+        });
+
+        // Connect actionRotateCCW button
+        findViewById(R.id.actionRotateCCW).setOnClickListener(view -> {
+            actionListener.rotateCCW();
+            dismiss();
+        });
+
+        // Connect actionJump button
+        findViewById(R.id.actionJump).setOnClickListener(view -> {
+            actionListener.jump();
+            dismiss();
+        });
+
+        // Connect actionClear button
+        findViewById(R.id.actionClear).setOnClickListener(view -> {
+            actionListener.clear();
+            dismiss();
+        });
     }
 }

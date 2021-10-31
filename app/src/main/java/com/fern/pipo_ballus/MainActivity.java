@@ -130,6 +130,27 @@ public class MainActivity extends AppCompatActivity {
         // Add actions button click
         findViewById(R.id.actionsBtn).setOnClickListener(view -> {
             ActionsDialog actionsDialog = new ActionsDialog(MainActivity.this);
+            actionsDialog.setActionListener(new ActionListener() {
+                @Override
+                public void rotateCW() {
+                    openCVHandler.setAction(ActionContainer.ACTION_ROTATE_CW);
+                }
+
+                @Override
+                public void rotateCCW() {
+                    openCVHandler.setAction(ActionContainer.ACTION_ROTATE_CCW);
+                }
+
+                @Override
+                public void jump() {
+                    openCVHandler.setAction(ActionContainer.ACTION_JUMP);
+                }
+
+                @Override
+                public void clear() {
+                    openCVHandler.setAction(ActionContainer.ACTION_NONE);
+                }
+            });
             actionsDialog.show();
         });
 

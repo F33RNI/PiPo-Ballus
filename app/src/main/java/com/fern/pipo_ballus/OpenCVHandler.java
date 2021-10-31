@@ -60,6 +60,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private final static int ALLOWED_LOST_FRAMES = 5;
 
     private final PositionContainer positionContainer;
+    private final ActionContainer actionContainer;
 
     private final CameraBridgeViewBase cameraBridgeViewBase;
     private final Activity activity;
@@ -73,7 +74,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
     private Scalar colorBallLower, colorBallUpper;
     private boolean tableRangeInverted, ballRangeInverted;
     private Scalar tableEllipseColor, tableMarksColor, tableTextColor, ballColor, ballSetpointColor;
-    private Scalar redColor, orangeColor, singleWhiteColor;
+    private Scalar redColor, orangeColor, limeColor, singleWhiteColor;
 
     private int rotationLast;
     private boolean initialized;
@@ -87,12 +88,15 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         this.positionContainers = positionContainers;
 
         this.positionContainer = new PositionContainer();
+        this.actionContainer = new ActionContainer();
 
         this.initialized = false;
     }
 
+    /**
+     * @return CameraBridgeViewBase class
+     */
     public CameraBridgeViewBase getCameraBridgeViewBase() {
-
         return cameraBridgeViewBase;
     }
 
@@ -183,7 +187,8 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
         ballSetpointColor = new Scalar(0, 255, 0);
 
         redColor = new Scalar(255, 0, 0);
-        orangeColor = new Scalar(255, 63, 0);
+        orangeColor = new Scalar(255, 127, 0);
+        limeColor = new Scalar(0, 255, 0);
         singleWhiteColor = new Scalar(255);
 
         // Set initialized flag
@@ -473,10 +478,23 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             // Decrement lostFrames counter every frame
             if (lostFrames > 0)
                 lostFrames--;
-
-                // Clear ballDetected flag if more frames lost than threshold
+            // Clear ballDetected flag if more frames lost than threshold
             else
                 positionContainer.ballDetected = false;
+
+            // Proceed actions
+            actionHandler();
+
+            // Print current action
+            if (actionContainer.action == ActionContainer.ACTION_ROTATE_CW)
+                Imgproc.putText(outputRGBA, "Rotate CW", new Point(30, 100),
+                        Core.FONT_HERSHEY_PLAIN, 2, limeColor, 2);
+            else if (actionContainer.action == ActionContainer.ACTION_ROTATE_CCW)
+                Imgproc.putText(outputRGBA, "Rotate CCW", new Point(30, 100),
+                        Core.FONT_HERSHEY_PLAIN, 2, limeColor, 2);
+            else if (actionContainer.action == ActionContainer.ACTION_JUMP)
+                Imgproc.putText(outputRGBA, "Jump", new Point(30, 100),
+                        Core.FONT_HERSHEY_PLAIN, 2, limeColor, 2);
 
             // Send new ball's position or clear the LinkedBlockingQueue
             try {
@@ -525,6 +543,46 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
         // Return raw frame if error occurs
         return inputFrame.rgba();
+    }
+
+    /**
+     * Sets new action
+     * @param action action number from ActionContainer
+     */
+    public void setAction(int action) {
+        actionContainer.action = action;
+    }
+
+    /**
+     * Handles the current action by changing the setpoint
+     * TODO: smooth change of the setpoint
+     * TODO: jump action
+     */
+    private void actionHandler() {
+        if (actionContainer.actionFrame < 360)
+            actionContainer.actionFrame += 5;
+        else
+            actionContainer.actionFrame = 0;
+
+        if (actionContainer.action == ActionContainer.ACTION_ROTATE_CW) {
+            positionContainer.ballSetpointX =
+                    1500 + Math.cos(Math.toRadians(actionContainer.actionFrame)) * 100;
+            positionContainer.ballSetpointY =
+                    1500 + Math.sin(Math.toRadians(actionContainer.actionFrame)) * 100;
+        }
+
+        else if (actionContainer.action == ActionContainer.ACTION_ROTATE_CCW) {
+            positionContainer.ballSetpointX =
+                    1500 + Math.sin(Math.toRadians(actionContainer.actionFrame)) * 100;
+            positionContainer.ballSetpointY =
+                    1500 + Math.cos(Math.toRadians(actionContainer.actionFrame)) * 100;
+        }
+        else {
+            positionContainer.ballSetpointX = 1500;
+            positionContainer.ballSetpointY = 1500;
+            positionContainer.ballSetpointZ = 1500;
+        }
+
     }
 
     /**

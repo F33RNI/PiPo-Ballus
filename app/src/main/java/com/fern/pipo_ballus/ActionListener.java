@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Table controller
+ * Copyright (C) 2021 Fern H. (aka Pavel Neshumov), PiPo-Ballus Android application
  *
  * Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,38 +26,14 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-#ifndef PID_H
-#define PID_H
+package com.fern.pipo_ballus;
 
-/*********************************/
-/*            X-Y PID            */
-/*********************************/
-// P term of X-Y PID controller (default = 0.28)
-const float PID_XY_P PROGMEM = 0.1;
-
-// I term of X-Y PID controller (default = 0.002)
-const float PID_XY_I PROGMEM = 0.000;
-
-// D term of X-Y PID controller (default = 3.2)
-const float PID_XY_D PROGMEM = 6.2;
-
-// Maximum output of the X-Y PID controller (+ / -)
-const float PID_XY_MAX PROGMEM = 400;
-
-
-/*********************************/
-/*            Z PID            */
-/*********************************/
-// P term of Z PID controller (default = 1.0)
-const float PID_Z_P PROGMEM = 1.0;
-
-// I term of Z PID controller (default = 0.0)
-const float PID_Z_I PROGMEM = 0;
-
-// D term of Z PID controller (default = 0.0)
-const float PID_Z_D PROGMEM = 0.0;
-
-// Maximum output of the Z PID controller (+ / -)
-const float PID_Z_MAX PROGMEM = 500;
-
-#endif
+/**
+ * This interface is used to transmit an action selection or clear signal from ActionsDialog
+ */
+public interface ActionListener {
+    void rotateCW();
+    void rotateCCW();
+    void jump();
+    void clear();
+}

@@ -65,8 +65,11 @@ void setup()
 
 void loop()
 {
-    // Read new data from serial port and execute PID
+    // Read new data from serial port
     serial_read();
+
+    // Execute PID controller
+    pid();
 
     // Reset PID controller if serial connection is lost
     if (serial_watchdog >= WATCHDOG_LOST_CYCLES) {
