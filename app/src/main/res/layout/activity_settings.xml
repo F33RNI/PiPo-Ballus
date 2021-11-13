@@ -141,7 +141,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:padding="8dp"
-                android:text="@string/motion_settings" />
+                android:text="@string/action_settings" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -156,16 +156,71 @@
                     android:layout_height="match_parent"
                     android:gravity="center_vertical"
                     android:layout_weight="1"
-                    android:text="@string/ball_position_filter_" />
+                    android:text="@string/rotation_speed" />
 
                 <com.google.android.material.slider.Slider
-                    android:id="@+id/settingsFilter"
+                    android:id="@+id/settingsRotationSpeed"
                     android:layout_width="150dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0"
-                    android:value="0.4"
+                    android:value="4"
                     android:valueFrom="0"
-                    android:valueTo="1.0"
+                    android:valueTo="10"
+                    android:stepSize="1"
+                    tools:ignore="SpeakableTextPresentCheck" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:text="@string/rotation_radius" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/settingsRotationRadius"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:value="150"
+                    android:valueFrom="0"
+                    android:valueTo="500"
+                    android:stepSize="10"
+                    tools:ignore="SpeakableTextPresentCheck" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:text="@string/jump_speed" />
+
+                <com.google.android.material.slider.Slider
+                    android:id="@+id/settingsJumpSpeed"
+                    android:layout_width="150dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0"
+                    android:value="80"
+                    android:valueFrom="0"
+                    android:valueTo="100"
+                    android:stepSize="5"
                     tools:ignore="SpeakableTextPresentCheck" />
             </LinearLayout>
 

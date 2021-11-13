@@ -33,8 +33,10 @@
     <string name="serial_port_settings">Configuraciones de comunicación</string>
     <string name="usb_serial_baud_rate">Velocidad en baudios serie USB:</string>
     <string name="packet_ending">Finalización del paquete:</string>
-    <string name="motion_settings">Configuración de movimientos</string>
-    <string name="ball_position_filter_">Filtro de posición de bola:</string>
     <string name="error_parsing_settings">Error al leer la configuración</string>
     <string name="error_saving_settings">Error al guardar la configuración</string>
+    <string name="rotation_speed">Velocidad de rotación:</string>
+    <string name="action_settings">Configuración de acciones</string>
+    <string name="rotation_radius">Radio de rotación:</string>
+    <string name="jump_speed">Velocidad de salto:</string>
 </resources>

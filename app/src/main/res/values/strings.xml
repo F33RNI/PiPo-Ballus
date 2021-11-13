@@ -28,10 +28,12 @@
     <string name="serial_port_settings">Communication settings</string>
     <string name="usb_serial_baud_rate">USB Serial baud rate:</string>
     <string name="packet_ending">Packet ending:</string>
-    <string name="motion_settings">Motion settings</string>
-    <string name="ball_position_filter_">Ball position filter:</string>
     <string name="error_parsing_settings">Error parsing settings</string>
     <string name="error_saving_settings">Error saving settings</string>
+    <string name="rotation_speed">Rotation speed:</string>
+    <string name="action_settings">Action settings</string>
+    <string name="rotation_radius">Rotation radius:</string>
+    <string name="jump_speed">Jump speed:</string>
     <string-array name="camera_options">
         <item>Any</item>
         <item>Back</item>

@@ -40,7 +40,9 @@ public class SettingsContainer {
     public static int tableColorUpper = 0xff00ffd5;
     public static int ballColorLower = 0xff7f7f7f;
     public static int ballColorUpper = 0xffffb2b2;
-    public static double positionFilter = 0.4;
+    public static int rotationSpeed = 4;
+    public static int rotationRadius = 150;
+    public static int jumpSpeed = 80;
     public static int baudRate = 57600;
     public static byte suffix1 = (byte) 0xEE;
     public static byte suffix2 = (byte) 0xEF;

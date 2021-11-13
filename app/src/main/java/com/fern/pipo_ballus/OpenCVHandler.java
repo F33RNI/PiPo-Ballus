@@ -78,7 +78,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
     private int rotationLast;
     private boolean initialized;
-    private int lostFrames;
+    private int lostFrames, centeredFrames;
 
     OpenCVHandler(CameraBridgeViewBase cameraBridgeViewBase,
                   Activity activity,
@@ -113,6 +113,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
 
         // Initialize variables
         rotationLast = -1;
+        centeredFrames = 0;
 
         inputRGBA = new Mat();
         outputRGBA = new Mat();
@@ -359,7 +360,8 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                                                     - tableBoundingRect.height / 2),
                                             (int) (tableRotatedRect.center.y
                                                     + tableBoundingRect.height / 2))),
-                            20, ballSetpointColor, 2);
+                            map((int) positionContainer.ballSetpointZ, 1000, 2000,
+                                    5, 50), ballSetpointColor, 2);
 
                     // Initialize maskTableCircle
                     Mat maskTableCircle =
@@ -415,49 +417,25 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
                             if (ballVSTableX >= 1000 && ballVSTableX <= 2000
                                     && ballVSTableY >= 1000 && ballVSTableY <= 2000) {
 
-                                // Set new coordinates without filtering
-                                // if before that the ball was not found
-                                if (!positionContainer.ballDetected) {
-                                    positionContainer.ballVSTableX = ballVSTableX;
-                                    positionContainer.ballVSTableY = ballVSTableY;
-                                    positionContainer.ballVSTableZ = 1500;
-                                    positionContainer.ballDetected = true;
-                                }
-
-                                // Set new filtered coordinates
-                                else {
-                                    positionContainer.ballVSTableX =
-                                            positionContainer.ballVSTableX
-                                                    * SettingsContainer.positionFilter +
-                                                    (double) ballVSTableX
-                                                            * (1 - SettingsContainer.
-                                                            positionFilter);
-                                    positionContainer.ballVSTableY =
-                                            positionContainer.ballVSTableY
-                                                    * SettingsContainer.positionFilter +
-                                                    (double) ballVSTableY
-                                                            * (1 - SettingsContainer.
-                                                            positionFilter);
-                                    positionContainer.ballVSTableZ = 1500;
-                                }
+                                // Set new coordinates
+                                positionContainer.ballVSTableX = ballVSTableX;
+                                positionContainer.ballVSTableY = ballVSTableY;
+                                positionContainer.ballVSTableZ = 1500;
+                                positionContainer.ballDetected = true;
 
                                 // Update lost counter
                                 lostFrames = ALLOWED_LOST_FRAMES;
 
+                                // Print ball's position
+                                Imgproc.putText(outputRGBA,
+                                        "X: " + (int) (positionContainer.ballVSTableX - 1500)
+                                                + "  Y: "
+                                                + (int) (positionContainer.ballVSTableY - 1500),
+                                        new Point(30, 50), Core.FONT_HERSHEY_PLAIN,
+                                        2, ballColor, 2);
+
                                 // Draw ball's position
-                                Imgproc.circle(outputRGBA,
-                                        new Point(map((int) positionContainer.ballVSTableX,
-                                                1000, 2000,
-                                                (int) (tableRotatedRect.center.x
-                                                        - tableBoundingRect.width / 2),
-                                                (int) (tableRotatedRect.center.x
-                                                        + tableBoundingRect.width / 2)),
-                                                map((int) positionContainer.ballVSTableY,
-                                                        1000, 2000,
-                                                        (int) (tableRotatedRect.center.y
-                                                                - tableBoundingRect.height / 2),
-                                                        (int) (tableRotatedRect.center.y
-                                                                + tableBoundingRect.height / 2))),
+                                Imgproc.circle(outputRGBA, ballCenter,
                                         (int) radius[0], ballColor, 2);
                             } else
                                 Imgproc.putText(outputRGBA, "Wrong ball position!", new Point(30, 50),
@@ -481,6 +459,12 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             // Clear ballDetected flag if more frames lost than threshold
             else
                 positionContainer.ballDetected = false;
+
+            // Clear number of centered frames and action frames if ball not detected
+            if (!positionContainer.ballDetected) {
+                centeredFrames = 0;
+                actionContainer.actionFrame = -1;
+            }
 
             // Proceed actions
             actionHandler();
@@ -512,7 +496,7 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
             // Display a message about low performance if the frame time is more than 33 ms (30 fps)
             if (System.currentTimeMillis() - timeStart > 33)
                 Imgproc.putText(outputRGBA, "WARNING! Low performance!",
-                        new Point(30, 100),
+                        new Point(30, 150),
                         Core.FONT_HERSHEY_PLAIN, 2, orangeColor, 2);
 
             // Resize to original size
@@ -559,28 +543,81 @@ public class OpenCVHandler implements CameraBridgeViewBase.CvCameraViewListener2
      * TODO: jump action
      */
     private void actionHandler() {
-        if (actionContainer.actionFrame < 360)
-            actionContainer.actionFrame += 5;
+        // Increment number of centered frames if the ball is close to the center
+        if (positionContainer.ballVSTableX > 1400 && positionContainer.ballVSTableX < 1600
+                && positionContainer.ballVSTableY > 1400 && positionContainer.ballVSTableY < 1600
+                && centeredFrames <= 10)
+            centeredFrames++;
         else
-            actionContainer.actionFrame = 0;
+            centeredFrames = 0;
 
-        if (actionContainer.action == ActionContainer.ACTION_ROTATE_CW) {
-            positionContainer.ballSetpointX =
-                    1500 + Math.cos(Math.toRadians(actionContainer.actionFrame)) * 100;
-            positionContainer.ballSetpointY =
-                    1500 + Math.sin(Math.toRadians(actionContainer.actionFrame)) * 100;
-        }
+        // Reset setpoints
+        positionContainer.ballSetpointX = 1500;
+        positionContainer.ballSetpointY = 1500;
+        positionContainer.ballSetpointZ = 1500;
 
-        else if (actionContainer.action == ActionContainer.ACTION_ROTATE_CCW) {
-            positionContainer.ballSetpointX =
-                    1500 + Math.sin(Math.toRadians(actionContainer.actionFrame)) * 100;
-            positionContainer.ballSetpointY =
-                    1500 + Math.cos(Math.toRadians(actionContainer.actionFrame)) * 100;
-        }
-        else {
-            positionContainer.ballSetpointX = 1500;
-            positionContainer.ballSetpointY = 1500;
-            positionContainer.ballSetpointZ = 1500;
+        // Proceed actions only if ball is detected
+        if (positionContainer.ballDetected) {
+            // Allow rotations
+            if (actionContainer.actionFrame < 0 && centeredFrames >= 10)
+                actionContainer.actionFrame = 0;
+
+            // Count 360deg for rotation (CW and CCW)
+            if (actionContainer.action != ActionContainer.ACTION_JUMP
+                    && actionContainer.actionFrame >= 0) {
+                if (actionContainer.actionFrame < 360)
+                    actionContainer.actionFrame += SettingsContainer.rotationSpeed;
+                else
+                    actionContainer.actionFrame = 0;
+            }
+
+            // CW rotation
+            if (actionContainer.action == ActionContainer.ACTION_ROTATE_CW) {
+                // Disable rotation if actionContainer.actionFrame < 0
+                if (actionContainer.actionFrame >= 0) {
+                    positionContainer.ballSetpointX =
+                            1500 + Math.cos(Math.toRadians(actionContainer.actionFrame))
+                                    * SettingsContainer.rotationRadius;
+                    positionContainer.ballSetpointY =
+                            1500 + Math.sin(Math.toRadians(actionContainer.actionFrame))
+                                    * SettingsContainer.rotationRadius;
+                }
+            }
+
+            // CCW rotation
+            else if (actionContainer.action == ActionContainer.ACTION_ROTATE_CCW) {
+                // Disable rotation if actionContainer.actionFrame < 0
+                if (actionContainer.actionFrame >= 0) {
+                    positionContainer.ballSetpointX =
+                            1500 + Math.sin(Math.toRadians(actionContainer.actionFrame))
+                                    * SettingsContainer.rotationRadius;
+                    positionContainer.ballSetpointY =
+                            1500 + Math.cos(Math.toRadians(actionContainer.actionFrame))
+                                    * SettingsContainer.rotationRadius;
+                }
+            }
+
+            // Jump action
+            else if (actionContainer.action == ActionContainer.ACTION_JUMP) {
+                // Start jump sequence if detected more than 9 centered frames
+                if (centeredFrames >= 10 && actionContainer.actionFrame < 1000)
+                    actionContainer.actionFrame = 1500;
+
+                if (actionContainer.actionFrame >= 1000) {
+                    // Step 1. Low the table to 1200
+                    if (actionContainer.actionFrame > 1200) {
+                        positionContainer.ballSetpointZ = actionContainer.actionFrame;
+                        actionContainer.actionFrame -= SettingsContainer.jumpSpeed / 2;
+                    }
+
+                    // Step 2. Rise the table to 1900
+                    else {
+                        positionContainer.ballSetpointZ = 1900;
+                        actionContainer.actionFrame -= SettingsContainer.jumpSpeed;
+                    }
+                }
+
+            }
         }
 
     }

@@ -33,8 +33,10 @@
     <string name="serial_port_settings">Настройки обмена данными</string>
     <string name="usb_serial_baud_rate">Скорость передачи по USB:</string>
     <string name="packet_ending">Окончание пакета:</string>
-    <string name="motion_settings">Настройки движений</string>
-    <string name="ball_position_filter_">Фильтр положения мяча:</string>
     <string name="error_parsing_settings">Ошибка чтения настроек</string>
     <string name="error_saving_settings">Ошибка сохранения настроек</string>
+    <string name="rotation_speed">Скорость вращения:</string>
+    <string name="action_settings">Настройки действий</string>
+    <string name="rotation_radius">Радиус вращения:</string>
+    <string name="jump_speed">Скорость прыжков:</string>
 </resources>

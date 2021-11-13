@@ -90,7 +90,9 @@ public class SettingsHandler {
             SettingsContainer.tableColorUpper = jsonObject.getInt("table_color_upper");
             SettingsContainer.ballColorLower = jsonObject.getInt("ball_color_lower");
             SettingsContainer.ballColorUpper = jsonObject.getInt("ball_color_upper");
-            SettingsContainer.positionFilter = jsonObject.getDouble("position_filter");
+            SettingsContainer.rotationSpeed = jsonObject.getInt("rotation_speed");
+            SettingsContainer.rotationRadius = jsonObject.getInt("rotation_radius");
+            SettingsContainer.jumpSpeed = jsonObject.getInt("jump_speed");
             SettingsContainer.baudRate = jsonObject.getInt("baud_rate");
             SettingsContainer.suffix1 = (byte)(jsonObject.getInt("suffix_1"));
             SettingsContainer.suffix2 = (byte)(jsonObject.getInt("suffix_2"));
@@ -131,7 +133,9 @@ public class SettingsHandler {
             jsonObject.put("table_color_upper", SettingsContainer.tableColorUpper);
             jsonObject.put("ball_color_lower", SettingsContainer.ballColorLower);
             jsonObject.put("ball_color_upper", SettingsContainer.ballColorUpper);
-            jsonObject.put("position_filter", SettingsContainer.positionFilter);
+            jsonObject.put("rotation_speed", SettingsContainer.rotationSpeed);
+            jsonObject.put("rotation_radius", SettingsContainer.rotationRadius);
+            jsonObject.put("jump_speed", SettingsContainer.jumpSpeed);
             jsonObject.put("baud_rate", SettingsContainer.baudRate);
             jsonObject.put("suffix_1", SettingsContainer.suffix1 & 0xFF);
             jsonObject.put("suffix_2", SettingsContainer.suffix2 & 0xFF);

@@ -61,7 +61,7 @@ public class SettingsActivity extends AppCompatActivity {
     private int cameraID;
     private int tableColorLower, tableColorUpper;
     private int ballColorLower, ballColorUpper;
-    private double positionFilter;
+    private int rotationSpeed, rotationRadius, jumpSpeed;
     private int baudRate;
     private byte suffix1, suffix2;
 
@@ -69,7 +69,7 @@ public class SettingsActivity extends AppCompatActivity {
     private Spinner cameraIDSpinner;
     private Button settingsTableColor;
     private Button settingsBallColor;
-    private Slider settingsFilter;
+    private Slider settingsRotationSpeed, settingsRotationRadius, settingsJumpSpeed;
     private EditText settingsSuffix1, settingsSuffix2;
     private EditText settingsBaudRate;
 
@@ -85,7 +85,9 @@ public class SettingsActivity extends AppCompatActivity {
         cameraIDSpinner = findViewById(R.id.cameraIDSpinner);
         settingsTableColor = findViewById(R.id.settingsTableColor);
         settingsBallColor = findViewById(R.id.settingsBallColor);
-        settingsFilter = findViewById(R.id.settingsFilter);
+        settingsRotationSpeed = findViewById(R.id.settingsRotationSpeed);
+        settingsRotationRadius = findViewById(R.id.settingsRotationRadius);
+        settingsJumpSpeed = findViewById(R.id.settingsJumpSpeed);
         settingsSuffix1 = findViewById(R.id.settingsSuffix1);
         settingsSuffix2 = findViewById(R.id.settingsSuffix2);
         settingsBaudRate = findViewById(R.id.settingsBaudRate);
@@ -116,7 +118,9 @@ public class SettingsActivity extends AppCompatActivity {
             tableColorUpper = 0xff00ffd5;
             ballColorLower = 0xff7f7f7f;
             ballColorUpper = 0xffffb2b2;
-            positionFilter = 0.4;
+            rotationSpeed = 4;
+            rotationRadius = 150;
+            jumpSpeed = 80;
             baudRate = 57600;
             suffix1 = (byte) 0xEE;
             suffix2 = (byte) 0xEF;
@@ -177,16 +181,42 @@ public class SettingsActivity extends AppCompatActivity {
             colorPickerDialog.show();
         });
 
-        // Connect position filter slider
-        settingsFilter.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+        // Connect rotation speed slider
+        settingsRotationSpeed.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
             @Override
             public void onStartTrackingTouch(@NonNull Slider slider) {
-                positionFilter = slider.getValue();
+                rotationSpeed = (int) slider.getValue();
             }
 
             @Override
             public void onStopTrackingTouch(@NonNull Slider slider) {
-                positionFilter = slider.getValue();
+                rotationSpeed = (int) slider.getValue();
+            }
+        });
+
+        // Connect rotation radius slider
+        settingsRotationRadius.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                rotationRadius = (int) slider.getValue();
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                rotationRadius = (int) slider.getValue();
+            }
+        });
+
+        // Connect jump speed slider
+        settingsJumpSpeed.addOnSliderTouchListener(new Slider.OnSliderTouchListener() {
+            @Override
+            public void onStartTrackingTouch(@NonNull Slider slider) {
+                jumpSpeed = (int) slider.getValue();
+            }
+
+            @Override
+            public void onStopTrackingTouch(@NonNull Slider slider) {
+                jumpSpeed = (int) slider.getValue();
             }
         });
 
@@ -259,7 +289,9 @@ public class SettingsActivity extends AppCompatActivity {
         this.tableColorUpper = SettingsContainer.tableColorUpper;
         this.ballColorLower = SettingsContainer.ballColorLower;
         this.ballColorUpper = SettingsContainer.ballColorUpper;
-        this.positionFilter = SettingsContainer.positionFilter;
+        this.rotationSpeed = SettingsContainer.rotationSpeed;
+        this.rotationRadius = SettingsContainer.rotationRadius;
+        this.jumpSpeed = SettingsContainer.jumpSpeed;
         this.baudRate = SettingsContainer.baudRate;
         this.suffix1 = SettingsContainer.suffix1;
         this.suffix2 = SettingsContainer.suffix2;
@@ -300,8 +332,10 @@ public class SettingsActivity extends AppCompatActivity {
                 + " - " + String.format("#%06X", (0xFFFFFF & ballColorUpper));
         settingsBallColor.setText(ballColorRange);
 
-        // Ball position filter
-        settingsFilter.setValue((float) positionFilter);
+        // Motion settings
+        settingsRotationSpeed.setValue((float) rotationSpeed);
+        settingsRotationRadius.setValue((float) rotationRadius);
+        settingsJumpSpeed.setValue((float) jumpSpeed);
 
         // USB serial baud rate
         settingsBaudRate.setText(String.valueOf(baudRate));
@@ -323,7 +357,9 @@ public class SettingsActivity extends AppCompatActivity {
             SettingsContainer.tableColorUpper = this.tableColorUpper;
             SettingsContainer.ballColorLower = this.ballColorLower;
             SettingsContainer.ballColorUpper = this.ballColorUpper;
-            SettingsContainer.positionFilter = this.positionFilter;
+            SettingsContainer.rotationSpeed = this.rotationSpeed;
+            SettingsContainer.rotationRadius = this.rotationRadius;
+            SettingsContainer.jumpSpeed = this.jumpSpeed;
             SettingsContainer.baudRate = this.baudRate;
             SettingsContainer.suffix1 = this.suffix1;
             SettingsContainer.suffix2 = this.suffix2;

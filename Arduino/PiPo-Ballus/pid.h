@@ -33,7 +33,7 @@
 /*            X-Y PID            */
 /*********************************/
 // P term of X-Y PID controller (default = 0.32)
-const float PID_XY_P PROGMEM = 0.32;
+const float PID_XY_P PROGMEM = 0.20;
 
 // I term of X-Y PID controller (default = 0.0012)
 const float PID_XY_I PROGMEM = 0.0012;
