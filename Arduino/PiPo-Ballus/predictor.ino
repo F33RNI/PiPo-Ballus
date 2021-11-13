@@ -27,7 +27,7 @@
  */
 
 /// <summary>
-/// Predists next position of the ball to archive 250Hz loop
+/// Predicts next position of the ball to achieve 250Hz loop
 /// </summary>
 /// <param name=""></param>
 void predictor(void) {

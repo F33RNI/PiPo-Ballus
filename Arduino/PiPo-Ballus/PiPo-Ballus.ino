@@ -68,7 +68,7 @@ void loop()
     // Read new data from serial port
     serial_read();
 
-    // Predict position to archive 250Hz
+    // Predict position to achieve 250Hz
     predictor();
 
     // Execute PID controller
@@ -92,7 +92,7 @@ void loop()
     servo_y_pulse = 1500. - pid_output_y;
     servo_z_pulse = 1500. - pid_output_z;
 
-    // Convert from cartesianto delta
+    // Convert from cartesian to delta
     servo_mapper();
 
     // Write pulses to the servos
