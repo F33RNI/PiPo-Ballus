@@ -42,21 +42,21 @@ const uint32_t SERIAL_BAUD_RATE PROGMEM = 57600;
 const uint8_t SERIAL_SUFFIX_1 PROGMEM = 0xEE;
 const uint8_t SERIAL_SUFFIX_2 PROGMEM = 0xEF;
 
-// If there is no packet within 25loops * 20ms = 500ms, the connection is considered lost
-const uint8_t WATCHDOG_LOST_CYCLES PROGMEM = 25;
+// If there is no packet within 125loops * 4ms = 500ms, the connection is considered lost
+const uint16_t WATCHDOG_LOST_CYCLES PROGMEM = 125;
 
 
 /**************************************/
 /*            Servo motors            */
 /**************************************/
 // Actual PDM pre servo at minimum value (1000)
-const uint16_t SERVO_P_LOWEST PROGMEM = 2000;
-const uint16_t SERVO_Q_LOWEST PROGMEM = 2000;
-const uint16_t SERVO_R_LOWEST PROGMEM = 2010;
+const uint16_t SERVO_P_LOWEST PROGMEM = 1900;
+const uint16_t SERVO_Q_LOWEST PROGMEM = 1900;
+const uint16_t SERVO_R_LOWEST PROGMEM = 1900;
 
 // Actual PDM pre servo at maximum value (2000)
-const uint16_t SERVO_P_HIGHEST PROGMEM = 1450;
-const uint16_t SERVO_Q_HIGHEST PROGMEM = 1450;
-const uint16_t SERVO_R_HIGHEST PROGMEM = 1450;
+const uint16_t SERVO_P_HIGHEST PROGMEM = 1300;
+const uint16_t SERVO_Q_HIGHEST PROGMEM = 1300;
+const uint16_t SERVO_R_HIGHEST PROGMEM = 1300;
 
 #endif

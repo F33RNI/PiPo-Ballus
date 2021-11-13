@@ -28,7 +28,7 @@
 
 void serial_read(void) {
     // Count watchdog cycles
-    if (serial_watchdog < UINT8_MAX)
+    if (serial_watchdog <= WATCHDOG_LOST_CYCLES)
         serial_watchdog++;
 
     // Continue loop until all bytes are read
@@ -48,21 +48,38 @@ void serial_read(void) {
             for (serial_temp_byte = 0; serial_temp_byte <= 12; serial_temp_byte++)
                 serial_check_byte ^= serial_buffer[serial_temp_byte];
 
+            // Check if the check sums are equal
             if (serial_check_byte == serial_buffer[13]) {
-                // If the check sums are equal
-                // Reset watchdog
-                serial_watchdog = 0;
+                // Parse X data
+                pid_input_x = (uint16_t)serial_buffer[1] | (uint16_t)serial_buffer[0] << 8;
+                delta_x = pid_input_x - serial_x_last;
+                serial_x_last = pid_input_x;
 
-                // Parse input data
-                pid_inpit_x = (uint16_t)serial_buffer[1] | (uint16_t)serial_buffer[0] << 8;
-                pid_inpit_y = (uint16_t)serial_buffer[3] | (uint16_t)serial_buffer[2] << 8;
-                pid_inpit_z = (uint16_t)serial_buffer[5] | (uint16_t)serial_buffer[4] << 8;
+                // Parse Y data
+                pid_input_y = (uint16_t)serial_buffer[3] | (uint16_t)serial_buffer[2] << 8;
+                delta_y = pid_input_y - serial_y_last;
+                serial_y_last = pid_input_y;
+
+                // Parse Z data
+                pid_input_z = (uint16_t)serial_buffer[5] | (uint16_t)serial_buffer[4] << 8;
+                delta_z = pid_input_z - serial_z_last;
+                serial_z_last = pid_input_z;
+
+                // Parse setpoints
                 pid_x_setpoint = (uint16_t)serial_buffer[7] | (uint16_t)serial_buffer[6] << 8;
                 pid_y_setpoint = (uint16_t)serial_buffer[9] | (uint16_t)serial_buffer[8] << 8;
                 pid_z_setpoint = (uint16_t)serial_buffer[11] | (uint16_t)serial_buffer[10] << 8;
 
                 // Currently not used
                 system_info_byte = serial_buffer[12];
+
+                // Calculate the increment in one cycle
+                delta_x /= (float)serial_watchdog;
+                delta_y /= (float)serial_watchdog;
+                delta_z /= (float)serial_watchdog;
+
+                // Reset watchdog
+                serial_watchdog = 0;
             }
         }
         else {

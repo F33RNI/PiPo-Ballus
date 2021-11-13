@@ -32,7 +32,7 @@
 void pid(void) {
     // X- PID controller
     // Calculate error
-    pid_error_temp = (float) (pid_inpit_x - pid_x_setpoint);
+    pid_error_temp = pid_input_x - (float)pid_x_setpoint;
 
     // Calculate I term
     pid_i_mem_x += PID_XY_I * pid_error_temp;
@@ -40,9 +40,12 @@ void pid(void) {
     else if (pid_i_mem_x < PID_XY_MAX * -1)pid_i_mem_x = PID_XY_MAX * -1;
 
     // Calculate P-D terms
-    pid_output_x = PID_XY_P * pid_error_temp + pid_i_mem_x + PID_XY_D * (pid_error_temp - pid_last_x_d_error);
-    if (pid_output_x > PID_XY_MAX)pid_output_x = PID_XY_MAX;
-    else if (pid_output_x < PID_XY_MAX * -1)pid_output_x = PID_XY_MAX * -1;
+    pid_output_temp = PID_XY_P * pid_error_temp + pid_i_mem_x + PID_XY_D * (pid_error_temp - pid_last_x_d_error);
+    if (pid_output_temp > PID_XY_MAX)pid_output_temp = PID_XY_MAX;
+    else if (pid_output_temp < PID_XY_MAX * -1)pid_output_temp = PID_XY_MAX * -1;
+
+    // Apply filter to the output of the PID controller
+    pid_output_x = pid_output_x * PID_XY_FILTER + pid_output_temp * (1.0 - PID_XY_FILTER);
 
     // Store error for next loop
     pid_last_x_d_error = pid_error_temp;
@@ -50,7 +53,7 @@ void pid(void) {
 
     // Y PID controller
     // Calculate error
-    pid_error_temp = (float) (pid_inpit_y - pid_y_setpoint);
+    pid_error_temp = pid_input_y - (float)pid_y_setpoint;
 
     // Calculate I term
     pid_i_mem_y += PID_XY_I * pid_error_temp;
@@ -58,9 +61,12 @@ void pid(void) {
     else if (pid_i_mem_y < PID_XY_MAX * -1)pid_i_mem_y = PID_XY_MAX * -1;
 
     // Calculate P-D terms
-    pid_output_y = PID_XY_P * pid_error_temp + pid_i_mem_y + PID_XY_D * (pid_error_temp - pid_last_y_d_error);
-    if (pid_output_y > PID_XY_MAX)pid_output_y = PID_XY_MAX;
-    else if (pid_output_y < PID_XY_MAX * -1)pid_output_y = PID_XY_MAX * -1;
+    pid_output_temp = PID_XY_P * pid_error_temp + pid_i_mem_y + PID_XY_D * (pid_error_temp - pid_last_y_d_error);
+    if (pid_output_temp > PID_XY_MAX)pid_output_temp = PID_XY_MAX;
+    else if (pid_output_temp < PID_XY_MAX * -1)pid_output_temp = PID_XY_MAX * -1;
+
+    // Apply filter to the output of the PID controller
+    pid_output_y = pid_output_y * PID_XY_FILTER + pid_output_temp * (1.0 - PID_XY_FILTER);
 
     // Store error for next loop
     pid_last_y_d_error = pid_error_temp;
@@ -68,7 +74,7 @@ void pid(void) {
 
     // Z PID controller
     // Calculate error
-    pid_error_temp = (float) (pid_inpit_z - pid_z_setpoint);
+    pid_error_temp = pid_input_z - (float)pid_z_setpoint;
 
     // Calculate I term
     pid_i_mem_z += PID_Z_I * pid_error_temp;
@@ -76,9 +82,12 @@ void pid(void) {
     else if (pid_i_mem_z < PID_Z_MAX * -1)pid_i_mem_z = PID_Z_MAX * -1;
 
     // Calculate P-D terms
-    pid_output_z = PID_Z_P * pid_error_temp + pid_i_mem_z + PID_Z_D * (pid_error_temp - pid_last_z_d_error);
-    if (pid_output_z > PID_Z_MAX)pid_output_z = PID_Z_MAX;
-    else if (pid_output_z < PID_Z_MAX * -1)pid_output_z = PID_Z_MAX * -1;
+    pid_output_temp = PID_Z_P * pid_error_temp + pid_i_mem_z + PID_Z_D * (pid_error_temp - pid_last_z_d_error);
+    if (pid_output_temp > PID_Z_MAX)pid_output_temp = PID_Z_MAX;
+    else if (pid_output_temp < PID_Z_MAX * -1)pid_output_temp = PID_Z_MAX * -1;
+
+    // Apply filter to the output of the PID controller
+    pid_output_z = pid_output_z * PID_Z_FILTER + pid_output_temp * (1.0 - PID_Z_FILTER);
 
     // Store error for next loop
     pid_last_z_d_error = pid_error_temp;

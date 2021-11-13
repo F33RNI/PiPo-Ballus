@@ -68,6 +68,9 @@ void loop()
     // Read new data from serial port
     serial_read();
 
+    // Predict position to archive 250Hz
+    predictor();
+
     // Execute PID controller
     pid();
 

@@ -26,32 +26,23 @@
  * BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES.
  */
 
-#ifndef DATATYPES_H
-#define DATATYPES_H
+/// <summary>
+/// Predists next position of the ball to archive 250Hz loop
+/// </summary>
+/// <param name=""></param>
+void predictor(void) {
+	// Predict only if serial if working
+	if (serial_watchdog > 0 && serial_watchdog < WATCHDOG_LOST_CYCLES) {
+		// Increment X input using calculated delta value
+		if (pid_input_x > 1000 && pid_input_x < 2000)
+			pid_input_x += delta_x;
 
-// Common variables
-uint32_t loop_timer;
+		// Increment Y input using calculated delta value
+		if (pid_input_y > 1000 && pid_input_y < 2000)
+			pid_input_y += delta_y;
 
-// Serial communication
-uint8_t serial_buffer[16];
-uint8_t serial_buffer_position, serial_byte_previous, serial_check_byte, serial_temp_byte;
-uint8_t system_info_byte;
-uint16_t serial_watchdog = WATCHDOG_LOST_CYCLES;
-float serial_x_last, serial_y_last, serial_z_last;
-float delta_x, delta_y, delta_z;
-
-// PID controller variables
-float pid_input_x, pid_input_y, pid_input_z;
-float pid_x_setpoint, pid_y_setpoint, pid_z_setpoint;
-float pid_error_temp, pid_output_temp;
-float pid_output_x, pid_output_y, pid_output_z;
-float pid_i_mem_x, pid_last_x_d_error;
-float pid_i_mem_y, pid_last_y_d_error;
-float pid_i_mem_z, pid_last_z_d_error;
-
-// Servo output
-uint16_t servo_x_pulse, servo_y_pulse, servo_z_pulse;
-uint16_t servo_p_pulse, servo_q_pulse, servo_r_pulse;
-uint16_t servo_p_pulse_serial, servo_q_pulse_serial, servo_r_pulse_serial;
-
-#endif
+		// Increment Z input using calculated delta value
+		if (pid_input_z > 1000 && pid_input_z < 2000)
+			pid_input_z += delta_z;
+	}
+}
