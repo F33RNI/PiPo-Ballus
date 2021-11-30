@@ -32,38 +32,38 @@
 /*********************************/
 /*            X-Y PID            */
 /*********************************/
-// P term of X-Y PID controller (default = 0.32)
-const float PID_XY_P PROGMEM = 0.20;
+// P term of X-Y PID controller (default = 0.28)
+const float PID_XY_P PROGMEM = 0.28f;
 
-// I term of X-Y PID controller (default = 0.0012)
-const float PID_XY_I PROGMEM = 0.0012;
+// I term of X-Y PID controller (default = 0.0008)
+const float PID_XY_I PROGMEM = 0.0008f;
 
-// D term of X-Y PID controller (default = 46.0)
-const float PID_XY_D PROGMEM = 46.0;
+// D term of X-Y PID controller (default = 40.0)
+const float PID_XY_D PROGMEM = 40.f;
 
-// Output filter of X-Y PID controller (default = 0.9)
-const float PID_XY_FILTER PROGMEM = 0.9;
+// Output filter of X-Y PID controller (default = 0.85)
+const float PID_XY_FILTER PROGMEM = .85f;
 
 // Maximum output of the X-Y PID controller (+ / -) (default = 500)
-const float PID_XY_MAX PROGMEM = 500;
+const float PID_XY_MAX PROGMEM = 500.f;
 
 
 /*********************************/
 /*            Z PID            */
 /*********************************/
 // P term of Z PID controller (default = 1.0)
-const float PID_Z_P PROGMEM = 1.0;
+const float PID_Z_P PROGMEM = 1.f;
 
 // I term of Z PID controller (default = 0.0)
-const float PID_Z_I PROGMEM = 0;
+const float PID_Z_I PROGMEM = 0.f;
 
 // D term of Z PID controller (default = 0.0)
-const float PID_Z_D PROGMEM = 0.0;
+const float PID_Z_D PROGMEM = 0.f;
 
 // Output filter of Z PID controller (default = 0.0)
-const float PID_Z_FILTER PROGMEM = 0.0;
+const float PID_Z_FILTER PROGMEM = 0.f;
 
 // Maximum output of the Z PID controller (+ / -) (default = 500)
-const float PID_Z_MAX PROGMEM = 500;
+const float PID_Z_MAX PROGMEM = 500.f;
 
 #endif
