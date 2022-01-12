@@ -30,11 +30,10 @@
     <head>
         <title>Home page</title>
         <link rel="stylesheet" type="text/css" href="../css/stylesheet.css"/>
-        <link rel="stylesheet" type="text/css" href="../css/stylesheet_night.css"/>
     </head>
             <body>
         <h1>Hola!</h1>
-		<h2>1. Pon tu teléfono sobre la mesa como se muestra en la imagen de abajo </h2>
+		<h2>1. Pon tu teléfono sobre la mesa como se muestra en la imagen de abajo</h2>
 		<img src="../images/1.jpg" >
 		<h2>2. La cámara del teléfono debe ubicarse estrictamente encima de la mesa</h2>
 		<img src="../images/2.jpg" >
@@ -43,6 +42,6 @@
 		<h2>4. Acciones con el bola</h2>
 		<h3>Para controlar la bola, presione el botón de acción y seleccione una acción en el cuadro de diálogo</h3>
 		<img src="../images/5.jpg" >
-		<h2>5. ¡Disfrutar!</h2>
+		<h2>5. ¡Disfrutar</h2>
     </body>
 </html>

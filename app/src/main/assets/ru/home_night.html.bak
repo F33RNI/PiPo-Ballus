@@ -1,5 +1,5 @@
 <!--
-   - Copyright (C) 2021 Kavina Viktoria, PiPo-Ballus Android application
+   - Copyright (C) 2021 Fern H. (aka Pavel Neshumov), Kavina Viktoria, PiPo-Ballus Android application
    -
    - Licensed under the GNU Affero General Public License, Version 3.0 (the "License");
    - you may not use this file except in compliance with the License.
@@ -26,23 +26,23 @@
    - BY USING THE PROJECT (OR PART OF THE PROJECT / CODE) YOU AGREE TO ALL OF THE ABOVE RULES. -->
 
 <!DOCTYPE html>
-<html lang="es">
-    <head>
-        <title>Home page</title>
-        <link rel="stylesheet" type="text/css" href="../css/stylesheet.css"/>
-        <link rel="stylesheet" type="text/css" href="../css/stylesheet_night.css"/>
-    </head>
-            <body>
-        <h1>Hola!</h1>
-		<h2>1. Pon tu teléfono sobre la mesa como se muestra en la imagen de abajo </h2>
+<html lang="ru">
+<head>
+<title>Home page</title>
+<link rel="stylesheet" type="text/css" href="../css/stylesheet.css"/>
+<link rel="stylesheet" type="text/css" href="../css/stylesheet_night.css"/>  
+</head>
+       <body>
+        <h1>Добро пожаловать!</h1>
+		<h2>1. Установите телефон сверху на конструкцию</h2>
 		<img src="../images/1.jpg" >
-		<h2>2. La cámara del teléfono debe ubicarse estrictamente encima de la mesa</h2>
+		<h2>2. Камера телефона должна быть расположена строго над столом</h2>
 		<img src="../images/2.jpg" >
-		<h2>3. Conecta tu teléfono a la mesa a través de bluetooth o USB</h2>
+		<h2>3. Подключите через Bluetooth или USB телефон к конструкции</h2>
 		<img src="../images/4.jpg" >
-		<h2>4. Acciones con el bola</h2>
-		<h3>Para controlar la bola, presione el botón de acción y seleccione una acción en el cuadro de diálogo</h3>
+		<h2>4. Действия с мячиком</h2>
+		<h3>Для управления мячиком нажмите кнопку действия и выберите действие в диалоге</h3>
 		<img src="../images/5.jpg" >
-		<h2>5. ¡Disfrutar!</h2>
+		<h2>5. Пользуйтесь на здоровье!</h2>
     </body>
 </html>
